@@ -72,7 +72,7 @@
     }
     
     
-    file_put_contents(__DIR__.'/public/assets/js/langs.json',json_encode($langs));
+    file_put_contents(__DIR__.'/client/assets/js/langs.json',json_encode($langs));
     
     $untranslated=json_decode(file_get_contents(__DIR__.'/data/langs'),true);
     

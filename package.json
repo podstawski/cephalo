@@ -1,23 +1,32 @@
 {
-  "name": "ControlByConsole",
-  "version": "0.0.0",
-  "description": "",
-  "main": "app.js",
+  "name": "cephalo",
+  "version": "1.0.0",
+  "main": "server/server.js",
+  "engines": {
+    "node": ">=10"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/podstawski/cb"
-  },
-  "author": "Piotr Podstawski",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/podstawski/cb/issues"
+    "start": "node .",
+    "posttest": "npm run lint && nsp check"
   },
   "dependencies": {
-    "express": "^4.13.4",
-    "mysql": "^2.10.2",
-    "socket.io": "^1.4.5"
-  }
+    "compression": "^1.0.3",
+    "cors": "^2.5.2",
+    "helmet": "^3.16.0",
+    "loopback-boot": "^2.6.5",
+    "serve-favicon": "^2.0.1",
+    "strong-error-handler": "^2.0.0",
+    "loopback-component-explorer": "^5.0.0",
+    "loopback": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.17.1",
+    "eslint-config-loopback": "^8.0.0"
+  },
+  "repository": {
+    "type": "",
+    "url": ""
+  },
+  "license": "UNLICENSED",
+  "description": "cephalo"
 }
