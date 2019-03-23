@@ -1,6 +1,40 @@
 {
-  "db": {
-    "name": "db",
-    "connector": "memory"
+
+  "mysql": {
+    "host": "173.194.250.90",
+    "port": "3306",
+    "database": "cefalo",
+    "password": "crucemtuam",
+    "name": "mysql",
+    "connector": "mysql-custom",
+    "user": "kiedymsza",
+    "connectionLimit": 10,
+    "connectTimeout": 20000,
+    "acquireTimeout": 20000,
+    "lazyConnect": true
+  },
+  "storage": {
+    "name": "storage",
+    "connector": "loopback-component-storage",
+    "provider": "google",
+    "projectId": "carnet-dev",
+    "keyFilename": "./server/carnet-dev-bebe36c84a47.json",
+    "nameConflict": "makeUnique"
+  },
+  "mail": {
+    "name": "mail",
+    "connector": "mail",
+    "transports": [
+      {
+        "type": "SMTP",
+        "host": "smtp.gmail.com",
+        "secure": true,
+        "port": 465,
+        "auth": {
+          "user": "carnet@webkameleon.com",
+          "pass": "Simerek2018!"
+        }
+      }
+    ]
   }
 }

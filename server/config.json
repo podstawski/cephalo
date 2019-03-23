@@ -2,11 +2,12 @@
   "restApiRoot": "/api",
   "host": "0.0.0.0",
   "port": 3000,
+  "aclErrorStatus": 403,
   "remoting": {
     "context": false,
     "rest": {
       "handleErrors": false,
-      "normalizeHttpPath": false,
+      "normalizeHttpPath": true,
       "xml": false
     },
     "json": {
@@ -17,6 +18,14 @@
       "extended": true,
       "limit": "100kb"
     },
-    "cors": false
+    "cors": false,
+    "sharedMethods": {
+      "*": false,
+      "create": true,
+      "find": true,
+      "findById": true,
+      "prototype.destroy": true,
+      "prototype.updateAttributes": true
+    }
   }
 }

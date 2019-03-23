@@ -1,0 +1,37 @@
+{
+  "name": "roleMapping",
+  "base": "RoleMapping",
+  "options": {
+    "strictObjectIDCoercion": true
+  },
+  "http": {
+    "path": "role-mapping"
+  },
+  "mixins": {
+    "AclMixin": true,
+    "RemoteMixin": true
+  },
+  "properties": {},
+  "validations": [],
+  "relations": {
+    "user": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "principalId"
+    },
+    "role": {
+      "type": "belongsTo",
+      "model": "role"
+    }
+  },
+  "indexes": {
+    "roleMapping_fk_index": {
+      "keys": {
+        "principalId": true,
+        "roleId": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

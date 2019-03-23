@@ -1,0 +1,35 @@
+{
+  "name": "accessToken",
+  "base": "AccessToken",
+  "http": {
+    "path": "access-token"
+  },
+  "mixins": {
+    "AclMixin": true,
+    "RemoteMixin": true
+  },
+  "properties": {
+    "userId": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "user": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "userId"
+    }
+  },
+  "indexes": {
+    "accessToken_user_index": {
+      "keys": {
+        "created": true,
+        "userId": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -4,7 +4,9 @@
       "loopback/common/models",
       "loopback/server/models",
       "../common/models",
-      "./models"
+      "../common/services",
+      "./models",
+      "./services"
     ],
     "mixins": [
       "loopback/common/mixins",
@@ -13,26 +15,40 @@
       "./mixins"
     ]
   },
-  "User": {
-    "dataSource": "db"
-  },
-  "AccessToken": {
-    "dataSource": "db",
+  "accessToken": {
+    "dataSource": "mysql",
     "public": false
   },
-  "ACL": {
-    "dataSource": "db",
+  "acl": {
+    "dataSource": "mysql",
     "public": false
   },
-  "RoleMapping": {
-    "dataSource": "db",
-    "public": false,
+  "roleMapping": {
+    "dataSource": "mysql",
+    "public": false
+  },
+  "role": {
+    "dataSource": "mysql",
+    "public": true,
     "options": {
-      "strictObjectIDCoercion": true
+      "remoting": {
+        "sharedMethods": {
+        }
+      }
     }
   },
-  "Role": {
-    "dataSource": "db",
-    "public": false
+  "user": {
+    "dataSource": "mysql",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "create": false,
+          "login": false,
+          "logout": true,
+          "customLogin": true
+        }
+      }
+    }
   }
 }

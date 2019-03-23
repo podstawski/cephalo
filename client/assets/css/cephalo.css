@@ -851,3 +851,59 @@ iframe {
 }
 
 
+
+.aside-menu .tab-content .all {
+    clear: both;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #f2f2f2;
+    margin-bottom: 5px;
+}
+
+.aside-menu .tab-content {
+    height: 100%;
+}
+
+
+.aside-menu .tab-content .tab-pane {
+    overflow-y: scroll;
+    height: 90%;
+}
+
+
+/* Media Queries */
+@media (max-height:600px) {
+    body:not(.top-nav) .sidebar .sidebar-footer ul.sidebar-footer-menu .dropdown-menu {
+        overflow-y: scroll;
+        max-height: 60%;
+    }
+}
+
+@media (max-width:991px) {
+    header.navbar a.navbar-brand {
+        background-size: 20%;
+    }
+}
+
+@media print {
+    #floor-container {
+        width: 100%;
+    }
+
+    .draggable-container.ui-draggable.ui-draggable-handle {
+        zoom: 0 !important;
+        left: 0 !important;
+        top: 0 !important;
+    }
+}
+
+
+div.wait {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100000;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(1, 1, 1, 0.5);
+    display: none;
+}

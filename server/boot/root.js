@@ -9,7 +9,7 @@ module.exports = function(app) {
     res.sendFile(path.join(__dirname+'/../../client/index.html'));
   });
 
-  router.get(/.+\/[^\/]+\.[a-z]+$/, function (req, res) {
+  router.get(/.+\/[^\/]+\.[a-z0-9]+$/, function (req, res) {
     let url=req.url;
     let qm=url.indexOf('?');
     if (qm!==-1) url=url.substr(0,qm);

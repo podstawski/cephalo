@@ -1,0 +1,44 @@
+{
+  "name": "role",
+  "base": "Role",
+  "mixins": {
+    "AclMixin": true,
+    "RemoteMixin": true,
+    "SaveMixin": {
+      "properties": [
+        "name"
+      ]
+    },
+    "HooksMixin": true
+  },
+  "http": {
+    "path": "role"
+  },
+  "properties": {
+    "label": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "principals": {
+      "type": "hasMany",
+      "model": "roleMapping",
+      "foreignKey": "roleId"
+    },
+    "permissions": {
+      "type": "hasMany",
+      "model": "permission",
+      "foreignKey": "roleId"
+    }
+  },
+  "acls": [],
+  "methods": {},
+  "indexes": {
+    "role_name_index": {
+      "keys": {
+        "name": true
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@
     "helmet#hsts": {
       "params": {
         "maxAge": 0,
-        "includeSubdomains": true
+        "includeSubDomains": true
       }
     },
     "helmet#hidePoweredBy": {},
@@ -45,6 +45,7 @@
     "loopback#urlNotFound": {}
   },
   "final:after": {
+    "./middleware/error-handler": {},
     "strong-error-handler": {}
   }
 }
