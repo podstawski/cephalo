@@ -303,6 +303,15 @@ $(document).ready(function($){
 		e.preventDefault();
 	});
 
+
+
+
+    if(window.location.hash!=='#main.html') {
+        $('.after-login').removeClass('after-login').addClass('_after-login');
+        $('body').addClass('sidebar-nav').removeClass('sidebar-off-canvas');
+	}
+
+
 });
 
 /****

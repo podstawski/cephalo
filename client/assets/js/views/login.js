@@ -30,7 +30,8 @@ $('#login').click(function() {
             $('.after-login').removeClass('after-login').addClass('_after-login');
             $('body').addClass('sidebar-nav').removeClass('sidebar-off-canvas');
 
-            if(window.location.hash==='#main.html') loadPage('dashboard.html');
+            if(window.location.hash==='#main.html')
+                loadPage('dashboard.html');
         }
 
     });

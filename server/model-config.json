@@ -50,5 +50,57 @@
         }
       }
     }
+  },
+  "patient": {
+    "dataSource": "mysql",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+        }
+      }
+    }
+  },
+  "userPatient": {
+    "dataSource": "mysql",
+    "public": false,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+        }
+      }
+    }
+  },
+  "rtg": {
+    "dataSource": "mysql",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+        }
+      }
+    }
+  },
+  "line": {
+    "dataSource": "mysql",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+        }
+      }
+    }
+  },
+  "equation": {
+    "dataSource": "mysql",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+        }
+      }
+    }
   }
+
+
 }

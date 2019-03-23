@@ -1,0 +1,43 @@
+{
+  "name": "patient",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {},
+  "mixins": {
+    "AclMixin": true,
+    "RemoteMixin": true,
+    "RelationsMixin": {
+      "properties": [
+        "users"
+      ]
+    },
+    "HooksMixin": true
+  },
+  "http": {
+    "path": "patient"
+  },
+  "properties": {
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "rtg": {
+      "type": "hasMany",
+      "model": "rtg"
+    },
+    "users": {
+      "type": "hasMany",
+      "model": "user",
+      "through": "userPatient"
+    }
+  },
+  "acls": [
+
+  ],
+  "methods": {}
+}

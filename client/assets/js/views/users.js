@@ -88,6 +88,7 @@ var usersTableDraw = function(data) {
 
 
 var listenForUsers=function(get) {
+	return;
 	websocket.once('users-all', function(data) {
 		usersTableDraw(data.data);
 	});

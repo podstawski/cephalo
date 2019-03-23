@@ -1,0 +1,31 @@
+{
+  "name": "userPatient",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {},
+  "mixins": {
+    "AclMixin": true,
+    "RemoteMixin": true,
+    "HooksMixin": true
+  },
+  "http": {
+    "path": "user-patient"
+  },
+  "properties": {
+  },
+  "validations": [],
+  "relations": {
+    "user": {
+      "type": "belongsTo",
+      "model": "user"
+    },
+    "patient": {
+      "type": "belongsTo",
+      "model": "patient"
+    }
+  },
+  "acls": [
+
+  ],
+  "methods": {}
+}
