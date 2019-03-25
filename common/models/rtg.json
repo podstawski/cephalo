@@ -1,0 +1,36 @@
+{
+  "name": "rtg",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {},
+  "mixins": {
+    "AclMixin": true,
+    "RemoteMixin": true,
+    "HooksMixin": true
+  },
+  "http": {
+    "path": "rtg"
+  },
+  "properties": {
+    "driveId": {
+      "type": "string"
+    },
+    "preview": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "patient": {
+      "type": "belongsTo",
+      "model": "patient"
+    }
+  },
+  "acls": [
+
+  ],
+  "methods": {}
+}

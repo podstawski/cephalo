@@ -1,0 +1,34 @@
+{
+  "name": "equation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {},
+  "mixins": {
+    "AclMixin": true,
+    "RemoteMixin": true,
+    "HooksMixin": true
+  },
+  "http": {
+    "path": "equation"
+  },
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "equation": {
+      "type": "string",
+      "dataType": "text"
+    },
+    "color": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {
+
+  },
+  "acls": [
+
+  ],
+  "methods": {}
+}

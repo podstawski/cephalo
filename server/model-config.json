@@ -4,9 +4,7 @@
       "loopback/common/models",
       "loopback/server/models",
       "../common/models",
-      "../common/services",
-      "./models",
-      "./services"
+      "./models"
     ],
     "mixins": [
       "loopback/common/mixins",
@@ -14,6 +12,10 @@
       "../common/mixins",
       "./mixins"
     ]
+  },
+  "Service": {
+    "dataSource": null,
+    "public": false
   },
   "accessToken": {
     "dataSource": "mysql",
@@ -51,6 +53,22 @@
       }
     }
   },
+  "google": {
+    "dataSource": null,
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "importData": true,
+          "checkToken": true,
+          "getToken": true,
+          "oauth": true
+
+        }
+      }
+    }
+  },
+
   "patient": {
     "dataSource": "mysql",
     "public": true,

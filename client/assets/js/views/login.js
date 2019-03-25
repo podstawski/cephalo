@@ -24,7 +24,7 @@ $('#login').click(function() {
     api('/user/login','POST+WAIT',data,function (err,token) {
 
         if (!err && token && token.token) {
-            window.localStorage.setItem('swagger_accessToken',data.token);
+            window.localStorage.setItem('swagger_accessToken',token.token);
             $('#username').text(data.username);
 
             $('.after-login').removeClass('after-login').addClass('_after-login');

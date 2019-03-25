@@ -1,8 +1,9 @@
 'use strict';
 
 const async = require('async');
-const {clone,LoopbackError} = require('../utils');
+const {clone,LoopbackError,resolvePath} = require('../utils');
 const {extend, map} = require('lodash');
+const googleAuth = require('google-auth-library');
 
 const ACL_DEFINITION = {
   "deny": {
@@ -27,6 +28,25 @@ module.exports = function (Model, options) {
   if (Model.definition.settings.acls)
     Object.keys(OPTIONS).filter(key => ACL_DEFINITION.hasOwnProperty(key) && OPTIONS[key] === true).forEach(key => Model.definition.settings.acls.push(ACL_DEFINITION[key]));
 
+
+  Model.oauth2Client = function(options) {
+
+      if (!options.currentUser.googleToken)
+          return null;
+
+      const GOOGLE_OAUTH_SECRET = resolvePath(Model.app.get('GOOGLE_OAUTH_SECRET'));
+      const credentials = require(GOOGLE_OAUTH_SECRET);
+
+      if (credentials === null || credentials.web === null)
+          return null;
+
+      const oauth2Client = new googleAuth.OAuth2Client(credentials.web.client_id, credentials.web.client_secret, Model.app.get('GOOGLE_OAUTH_CALLBACK'));
+
+      oauth2Client.credentials = options.currentUser.googleToken;
+      return oauth2Client;
+  }
+
+
   Model.beforeRemote('**', function (context, unused, next) {
     if (context.args == null)
       return next();
@@ -46,7 +66,6 @@ module.exports = function (Model, options) {
 
     const filter = {};
 
-
     Model.app.models.User.findById(userId, filter, options, function (err, user) {
       if (err || !user)
         return next(err);
@@ -55,6 +74,7 @@ module.exports = function (Model, options) {
         return next(new LoopbackError('User is suspended, please contact your administrator','ACCESS_DENIED',403));
 
       options.currentUser = user;
+
       next();
     });
   });
@@ -76,7 +96,6 @@ module.exports = function (Model, options) {
   };
 
   const createOptionsFromRemotingContext = Model.createOptionsFromRemotingContext;
-
   Model.createOptionsFromRemotingContext = function (ctx) {
     const base = this.base.createOptionsFromRemotingContext(ctx);
 
@@ -85,7 +104,6 @@ module.exports = function (Model, options) {
 
     if (base.accessToken) {
       ctx.res.set('X-User-TTL', base.accessToken.ttl || 0);
-
       Model.accessControlExposeHeaders(ctx.res, 'X-User-TTL');
     }
 
