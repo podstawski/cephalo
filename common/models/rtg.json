@@ -22,11 +22,25 @@
       "type": "string"
     }
   },
+  "scope": {
+    "include": [
+      {
+        "relation": "patient"
+      },
+      {
+        "relation": "lines"
+      }
+    ]
+  },
   "validations": [],
   "relations": {
     "patient": {
       "type": "belongsTo",
       "model": "patient"
+    },
+    "lines": {
+      "type": "hasMany",
+      "model": "line"
     }
   },
   "acls": [

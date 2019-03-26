@@ -7,7 +7,7 @@ var polygonMode=false;
 var polygonPoints=[];
 var elements=[];
 var lastDragEvent=0;
-var thisfloor=0;
+var thisrtg=0;
 var dotW=16;
 var dotH=16;
 var uploadImage=null;
@@ -21,18 +21,18 @@ var maxDeviceRatio=10;
 var busRequested=false;
 var ctrlOn=false;
 
-var lastFloorDebugTxt='';
+var lastRtgDebugTxt='';
 
-var floorDebug=function(txt) {
-    if (lastFloorDebugTxt!=txt) {
-        var dst=$('#floor-container .draggable-container .floor-debug-container .floor-debug-contents');
+var rtgDebug=function(txt) {
+    if (lastRtgDebugTxt!=txt) {
+        var dst=$('#rtg-container .draggable-container .rtg-debug-container .rtg-debug-contents');
         if (dst.length==1) {
             dst.append('<p>'+txt+'</p>');
             dst.scrollTop(dst[0].scrollHeight);
         }
 
     }
-    lastFloorDebugTxt=txt;
+    lastRtgDebugTxt=txt;
 }
 
 var modalCleanup = function() {
@@ -46,7 +46,7 @@ var modalCleanup = function() {
 
 var zoomContainer = function(z,set,e) {
     
-    var sel='#floor-container .draggable-container';
+    var sel='#rtg-container .draggable-container';
     var current=$(sel).css('zoom');
     var w=$(sel).width(),h=$(sel).height(),x=parseFloat($(sel).css('left')),y=parseFloat($(sel).css('top'));
     if (isNaN(x)) x=0;
@@ -76,8 +76,8 @@ var zoomContainer = function(z,set,e) {
         $(sel).css('zoom',current);
         
         if (e!=null) {
-            var ox=e.pageX-$('#floor-container').offset().left;
-            var oy=e.pageY-$('#floor-container').offset().top;
+            var ox=e.pageX-$('#rtg-container').offset().left;
+            var oy=e.pageY-$('#rtg-container').offset().top;
     
             $(sel).css('left',(x+(1-z)*ox/current)+'px');
             $(sel).css('top',(y+(1-z)*oy/current)+'px');                
@@ -137,8 +137,8 @@ var roomOfDevice = function(obj) {
 
 var calculatePoint = function(p,dbg) {
     var zoom=zoomContainer();
-    var w=parseFloat($('#floor-container .draggable-container').width());
-    var h=parseFloat($('#floor-container .draggable-container').height());
+    var w=parseFloat($('#rtg-container .draggable-container').width());
+    var h=parseFloat($('#rtg-container .draggable-container').height());
     
     
     
@@ -154,7 +154,7 @@ var calculatePoint = function(p,dbg) {
         };
     }
     
-    if (dbg) floorDebug(p.x+','+p.y+' &raquo; '+point.x+','+point.y+' ('+w+','+h+')');
+    if (dbg) rtgDebug(p.x+','+p.y+' &raquo; '+point.x+','+point.y+' ('+w+','+h+')');
     //console.log(p.x,p.y,'->',point.x,point.y,'w:'+w,'h:'+h,zoom);
     
     return point;
@@ -202,7 +202,7 @@ var drawPolygonPoints = function() {
 }
 
 var debugContainer = function() {
-    floorDebug('F/C:'+$('#floor-container').width()+'/'+$('#floor-container .draggable-container').width()+', z:'+Math.round(10*zoomContainer())/10);
+    rtgDebug('F/C:'+$('#rtg-container').width()+'/'+$('#rtg-container .draggable-container').width()+', z:'+Math.round(10*zoomContainer())/10);
 }
 
 var calculateWH = function (autoheight) {
@@ -215,14 +215,14 @@ var calculateWH = function (autoheight) {
     if (height<200) height=200;
     
     if (autoheight) {
-        $('#floor-container').css('height','auto');
+        $('#rtg-container').css('height','auto');
     } else {
-        $('#floor-container').height(height);
+        $('#rtg-container').height(height);
     }
     
-    //$('img.svg').width($('#floor-container .draggable-container').width());
-    $('img.svg').width($('#floor-container').width());
-    $('#floor-container .draggable-container').width($('#floor-container').width());
+    //$('img.svg').width($('#rtg-container .draggable-container').width());
+    $('img.svg').width($('#rtg-container').width());
+    $('#rtg-container .draggable-container').width($('#rtg-container').width());
 
     debugContainer();
     
@@ -281,7 +281,7 @@ var drawPolygon = function(points,id,data,element,labelpoint) {
     }
     
     
-    var poli = $(polygon).appendTo('#floor-container .draggable-container').css({left: minx, top:miny});
+    var poli = $(polygon).appendTo('#rtg-container .draggable-container').css({left: minx, top:miny});
     poli.width(maxx-minx);
     poli.height(maxy-miny);
 
@@ -328,7 +328,7 @@ var drawPolygon = function(points,id,data,element,labelpoint) {
         uploadImage=null;
         
         element.data.admin=currentuser.admin;
-        $.smekta_file('views/smekta/floor-polygon.html',element.data,'#edit-element .modal-body',function(){
+        $.smekta_file('views/smekta/rtg-polygon.html',element.data,'#edit-element .modal-body',function(){
             $('#edit-element .modal-body .translate').translate();
         });
         
@@ -342,7 +342,7 @@ var drawPolygon = function(points,id,data,element,labelpoint) {
             var point=calculatePoint({x:$(this).position().left, y:$(this).position().top});
             var data={id: $(this).parent().attr('id'),lx: point.x, ly: point.y};
             
-            websocket.emit('db-save','floor',data);
+            websocket.emit('db-save','rtg',data);
         }    
     });
     
@@ -386,13 +386,13 @@ var drawDeviceElement = function(data,element) {
     
     if (!element) { 
         if (data.point.x<0 || data.point.y<0) {
-            if (data.id) websocket.emit('db-remove','floor',data.id);
+            if (data.id) websocket.emit('db-remove','rtg',data.id);
             return;
         }
         data.wh=globalDevices[data.type].wh||1;
         
         var device=new Device(data, zoomContainer, devicesStateEmiter);
-        device.parent($('#floor-container .draggable-container'));
+        device.parent($('#rtg-container .draggable-container'));
         element={device: device, type: 'device', data: data, id: data.id,ready4click:true};
         elements.push(element);
 
@@ -402,7 +402,7 @@ var drawDeviceElement = function(data,element) {
     
     var z=data.z||1;
     data.z=z;
-    var ratio=0.1*z*deviceRatio*$('#floor-container').width()/originalSvgWidth;
+    var ratio=0.1*z*deviceRatio*$('#rtg-container').width()/originalSvgWidth;
     
     device.draw({
         stop: function(e,ui) {
@@ -415,7 +415,7 @@ var drawDeviceElement = function(data,element) {
             d.room=roomOfDevice($(this));
             
             
-            websocket.emit('db-save','floor',d);
+            websocket.emit('db-save','rtg',d);
             lastDraggedElement={id: data.id,element: $(this)};
         },
         dblclickDevice: function(e) {
@@ -432,7 +432,7 @@ var drawDeviceElement = function(data,element) {
             calculateLabelForSmekta(data,data.type);
             
             data.admin=currentuser.admin;
-            $.smekta_file('views/smekta/floor-device.html',data,'#edit-element .modal-body',function(){
+            $.smekta_file('views/smekta/rtg-device.html',data,'#edit-element .modal-body',function(){
                 $('#edit-element .modal-body .translate').translate();
             });
         },
@@ -460,7 +460,7 @@ var drawDeviceElement = function(data,element) {
             }
             
             cdata.admin=currentuser.admin;
-            $.smekta_file('views/smekta/floor-control.html',cdata,'#edit-element .modal-body',function(){
+            $.smekta_file('views/smekta/rtg-control.html',cdata,'#edit-element .modal-body',function(){
                 $('#edit-element .modal-body .translate').translate();
             });
         }
@@ -478,8 +478,8 @@ var drawDeviceElement = function(data,element) {
         data.z=z;
         device.dom().height(device.dom().height()*z/data.z);
         device.dom().width(device.dom().width()*z/data.z);
-        websocket.emit('db-save','floor',d);
-        floorDebug(data.haddr+' z: '+Math.round(z*10)/10);
+        websocket.emit('db-save','rtg',d);
+        rtgDebug(data.haddr+' z: '+Math.round(z*10)/10);
     }
     
     if (element.ready4click) {
@@ -514,7 +514,7 @@ var removePolygonPoints=function() {
         delete(polygonPoints[i].dot);
     }
     polygonPoints=[];
-    $('#floor-container .draggable-container .line').remove();
+    $('#rtg-container .draggable-container .line').remove();
 };
 
 var createPolygonFromPoints = function() {
@@ -524,39 +524,41 @@ var createPolygonFromPoints = function() {
     
     polygonMode=false;
     $('.breadcrumb .icon-note').removeClass('active');
-    $('#floor-container .floor-polygon-dashboard').hide();
-    $('#floor-container .draggable-container .line').remove();
+    $('#rtg-container .rtg-polygon-dashboard').hide();
+    $('#rtg-container .draggable-container .line').remove();
     
-    websocket.emit('db-save','floor',{floor: thisfloor, type:'polygon', points:polygonPoints});
+    websocket.emit('db-save','rtg',{rtg: thisrtg, type:'polygon', points:polygonPoints});
     removePolygonPoints();
 }
 
 
 
-var floorDraw=function(data) {
-    
-    if (data.description===undefined) {
-        data.description=$('.sidebar .sidebar-header strong').text();
+var rtgDraw=function(err,data) {
+
+    if (err) {
+
+        return;
     }
+    var description = data.patient.firstName + ' ' +data.patient.lastName;
+
     
     $('.page-header .page-title').text(data.name);
-    $('.page-header .page-desc').text(data.description);
+    $('.page-header .page-desc').text(description);
     
-    document.title=data.description+': '+data.name;
+    document.title=description+': '+data.name;
+
+    setBreadcrumbs([{name: description, href:'patient.html,'+data.patient.id},
+        {name: data.name, href:'rtg.html,'+data.id}]);
+
     
-    if (typeof(data.parent)=='undefined' || data.parent==null) {
-        setBreadcrumbs([{name: data.description, href:'project.html,'+data.project},
-                       {name: data.name, href:'floor.html,'+data.id}]);
-    }
-    
-    $('#floor-container img.svg').attr('src',data.img).load(function(){
+    $('#rtg-container img.svg').attr('src',data.preview).load(function(){
         originalSvgWidth=$(this).width();
         calculateWH();
-        websocket.emit('db-select','floor',[{floor:thisfloor}]);
+        //websocket.emit('db-select','rtg',[{rtg:thisrtg}]);
     });
     
     
-    $('#floor-container .floor-polygon-dashboard').click(function(e){
+    $('#rtg-container .rtg-polygon-dashboard').click(function(e){
         
         if (polygonMode && Date.now()-lastDragEvent>1500) {
             
@@ -565,8 +567,8 @@ var floorDraw=function(data) {
             
 
             var zoom=zoomContainer();
-            var w=parseFloat($('#floor-container').width());
-            var h=parseFloat($('#floor-container .draggable-container').height());
+            var w=parseFloat($('#rtg-container').width());
+            var h=parseFloat($('#rtg-container .draggable-container').height());
             var point={
                 x:(ex/zoom)/w,
                 y:(ey/zoom)/h
@@ -576,7 +578,7 @@ var floorDraw=function(data) {
             var img='<img src="assets/img/dot.png" class="polygon-dot"/>';
             
             
-            point.dot=$(img).css({left: -1*dotW, top: -1*dotH}).appendTo('#floor-container .draggable-container');
+            point.dot=$(img).css({left: -1*dotW, top: -1*dotH}).appendTo('#rtg-container .draggable-container');
             
             polygonPoints.push(point);
             point.dot.attr('title',polygonPoints.length);
@@ -604,11 +606,11 @@ var floorDraw=function(data) {
 }
 
 
-var floorDrawElements=function(data) {
+var rtgDrawElements=function(data) {
     
     var haddrs=[];
     
-    if (data.length>0 && data[0].floor!=thisfloor) return;
+    if (data.length>0 && data[0].rtg!=thisrtg) return;
     
     for(var i=0;i<elements.length;i++) {
         elements[i].toBeDeleted=true;
@@ -658,7 +660,7 @@ var floorDrawElements=function(data) {
                             var room=roomOfDevice(dom);
                             if (room!=null) {
                                 data.room=room;
-                                websocket.emit('db-save','floor',data);           
+                                websocket.emit('db-save','rtg',data);           
                             }
                         },1000,dom,data[i]);
                         
@@ -673,7 +675,7 @@ var floorDrawElements=function(data) {
         
     }
 
-    floorDebug('Elements: '+data.length+' (new:'+newlements+'), removed: '+deletedelements);
+    rtgDebug('Elements: '+data.length+' (new:'+newlements+'), removed: '+deletedelements);
     debugContainer();
     for(var i=0;i<elements.length;i++) {
         
@@ -685,16 +687,7 @@ var floorDrawElements=function(data) {
     }    
     
     moveElements();
-    
-    /*
-     *Ask bus about states of all elements
-     *Only first load
-     */
-    
-    if (!busRequested) {
-        busSend(haddrs);
-        busRequested=true;
-    }
+
     
 }
 
@@ -732,7 +725,7 @@ var drawAsideDevices = function() {
             helper: "clone",
             appendTo: "body",
             stop: function(e,ui) {
-                var ctn=$('#floor-container');
+                var ctn=$('#rtg-container');
                 
                 if (ui.offset.top>ctn.offset().top
                     &&
@@ -743,10 +736,10 @@ var drawAsideDevices = function() {
                     ui.offset.left<ctn.offset().left+ctn.width()
                     ){
                         var zoom=zoomContainer();
-                        var w=parseFloat($('#floor-container .draggable-container .svg').width());
-                        var h=parseFloat($('#floor-container .draggable-container .svg').height());
+                        var w=parseFloat($('#rtg-container .draggable-container .svg').width());
+                        var h=parseFloat($('#rtg-container .draggable-container .svg').height());
                         
-                        ctn=$('#floor-container .draggable-container');
+                        ctn=$('#rtg-container .draggable-container');
                         
                         var data=device.attr();
                         
@@ -755,14 +748,14 @@ var drawAsideDevices = function() {
                             y:((ui.offset.top/zoom - ctn.offset().top))/h
                         }
                         
-                        floorDebug('Drop: '+Math.round(ui.offset.left - ctn.offset().left)+' x '+Math.round(ui.offset.top - ctn.offset().top));
+                        rtgDebug('Drop: '+Math.round(ui.offset.left - ctn.offset().left)+' x '+Math.round(ui.offset.top - ctn.offset().top));
                         
 
-                        data.floor=thisfloor;
+                        data.rtg=thisrtg;
                         data.type=symbol;
                         data.controls=globalDevices[symbol].controls||[];
                         
-                        websocket.emit('db-save','floor',data);
+                        websocket.emit('db-save','rtg',data);
                     
                 }
                 
@@ -793,8 +786,8 @@ var drawAsideDevices = function() {
     
 }
 
-var printFloor = function (start) {
-    floorDebug('Prn: p: '+$('.draggable-container').position().left+' x '+$('.draggable-container').position().top+', w: '+$('#floor-container').width()+', '+$('.draggable-container').width());
+var printRtg = function (start) {
+    rtgDebug('Prn: p: '+$('.draggable-container').position().left+' x '+$('.draggable-container').position().top+', w: '+$('#rtg-container').width()+', '+$('.draggable-container').width());
     zoomContainer(1,1);
     $('.draggable-container').css({left:0, top:0});
     calculateWH(start);
@@ -805,17 +798,19 @@ $(function(){
 
     var hash=window.location.hash;
     hash=hash.split(',');
-    if (hash.length>1 && parseInt(hash[1])>0) {
-        thisfloor=parseInt(hash[1]);
-        websocket.emit('db-get','structure',thisfloor);
-    }
-    
-    websocket.emit('db-get','devices');
+    if (hash.length==1 || isNaN(parseInt(hash[1])))
+        return;
+
+
+    thisrtg=parseInt(hash[1]);
+    api('/rtg/'+thisrtg,rtgDraw);
+
+    api('/equation',buildAsideMenu);
 
     var icon_selector='.breadcrumb .breadcrumb-menu i.icon-note';
     $(icon_selector).removeClass('active');
     
-    $('.breadcrumb .btn-floor').not('.edit-mode-only').fadeIn(200);
+    $('.breadcrumb .btn-rtg').not('.edit-mode-only').fadeIn(200);
    
     
     busRequested=false;
@@ -833,12 +828,12 @@ $(function(){
             if (polygonMode) {
                 polygonMode=false;
                 $(icon_selector).removeClass('active');
-                $('#floor-container .floor-polygon-dashboard').hide();
+                $('#rtg-container .rtg-polygon-dashboard').hide();
                 removePolygonPoints();
             } else {
                 polygonMode=true;
                 $(icon_selector).addClass('active');
-                $('#floor-container .floor-polygon-dashboard').show();
+                $('#rtg-container .rtg-polygon-dashboard').show();
             }
         });
         
@@ -851,19 +846,19 @@ $(function(){
         
         $(document).on('click','.breadcrumb .edit-mode-toggle',function(){
             $(this).toggleClass('active');
-            $('#floor-container').toggleClass('previewmode').toggleClass('editmode');
+            $('#rtg-container').toggleClass('previewmode').toggleClass('editmode');
             $(this).children().toggleClass('active');
             editmode=$(this).hasClass('active');
             
             if (editmode) {
                 $('.breadcrumb .edit-mode-only').show();
-                $('#floor-container .draggable-container .device-container').draggable('enable');
-                $('#floor-container .draggable-container .polygon div').draggable('enable');
+                $('#rtg-container .draggable-container .device-container').draggable('enable');
+                $('#rtg-container .draggable-container .polygon div').draggable('enable');
                 
             } else {
                 $('.breadcrumb .edit-mode-only').hide();
-                $('#floor-container .draggable-container .device-container').draggable('disable');
-                $('#floor-container .draggable-container .polygon div').draggable('disable');
+                $('#rtg-container .draggable-container .device-container').draggable('disable');
+                $('#rtg-container .draggable-container .polygon div').draggable('disable');
                             
             }
         });      
@@ -891,7 +886,7 @@ $(function(){
         $(document).keyup(function(e){
             
             if (e.which==17) {
-                floorDebug('Ctrl-UP, editmode: '+editmode);
+                rtgDebug('Ctrl-UP, editmode: '+editmode);
                 ctrlOn=false;
             }
         });
@@ -899,7 +894,7 @@ $(function(){
         $(document).keydown(function(e){
             
             if (e.which==17) {
-                floorDebug('Ctrl-DOWN, editmode: '+editmode);
+                rtgDebug('Ctrl-DOWN, editmode: '+editmode);
                 ctrlOn=true;
             }
             
@@ -922,33 +917,33 @@ $(function(){
                     p.y=p.top;
                     d.point=calculatePoint(p);
         
-                    websocket.emit('db-save','floor',d);
+                    websocket.emit('db-save','rtg',d);
                 }
             }
         });
         
     }
 
-    $('#floor-container .draggable-container').draggable({
+    $('#rtg-container .draggable-container').draggable({
         stop: function() {
             lastDragEvent=Date.now();
             $(this).css('height','auto');
         }
     });
     
-    zoomDraggableFix($('#floor-container .draggable-container'));
+    zoomDraggableFix($('#rtg-container .draggable-container'));
     
-    $('#floor-container .draggable-container .floor-debug-container').draggable();
-    zoomDraggableFix($('#floor-container .draggable-container .floor-debug-container'));
+    $('#rtg-container .draggable-container .rtg-debug-container').draggable();
+    zoomDraggableFix($('#rtg-container .draggable-container .rtg-debug-container'));
     
-    $('#floor-container .draggable-container .floor-debug-container a').click(function(){
+    $('#rtg-container .draggable-container .rtg-debug-container a').click(function(){
         $(this).parent().remove();
     });
     
     /*
      *mousewheel: zoom in/out view
      */
-    $('#floor-container .draggable-container').bind('mousewheel', function(e){
+    $('#rtg-container .draggable-container').bind('mousewheel', function(e){
         
         if(e.originalEvent.wheelDelta /120 > 0) zoomContainer(1.1,null,e);
         else zoomContainer(0.9,null,e);
@@ -964,7 +959,7 @@ $(function(){
     if ($.calculateWHbound===undefined) {
         $.calculateWHbound=true;
         $(window).bind('resize', function() {
-            if (window.location.hash.indexOf('floor')>=0) {
+            if (window.location.hash.indexOf('rtg')>=0) {
                 calculateWH(); 
             }
             
@@ -993,7 +988,7 @@ $(function(){
                 data.img=uploadImage;
             }
             
-            websocket.emit('db-save','floor',data);
+            websocket.emit('db-save','rtg',data);
         }
         
         if ($('#edit-element').hasClass('aside-edit')) {
@@ -1022,7 +1017,7 @@ $(function(){
                 }
             }
             
-            websocket.emit('db-save','floor',data);            
+            websocket.emit('db-save','rtg',data);            
         } 
         
 
@@ -1043,7 +1038,7 @@ $(function(){
             });
             
             
-            websocket.emit('db-save','floor',data);
+            websocket.emit('db-save','rtg',data);
         }
         
 
@@ -1053,7 +1048,7 @@ $(function(){
     $('#confirm-delete .btn-danger').click(function () {
         $('#confirm-delete').modal('hide');
         $('#edit-element').modal('hide');
-        websocket.emit('db-remove','floor',$('#edit-element').attr('rel'));
+        websocket.emit('db-remove','rtg',$('#edit-element').attr('rel'));
     });
     
     

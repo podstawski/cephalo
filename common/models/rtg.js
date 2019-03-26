@@ -16,9 +16,6 @@ module.exports = function (Rtg) {
         if (!data || !data.driveId)
             return next();
 
-
-
-
         if (!ctx.options || !ctx.options.currentUser || !ctx.options.currentUser.googleToken)
             return next();
 
