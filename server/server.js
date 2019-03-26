@@ -28,7 +28,7 @@ app.start = function () {
         }
     };
 
-    if (app.get('url') && app.get('url').indexOf('https') == 0) {
+    if (app.get('url') && app.get('url').indexOf('https') === 0) {
         const keys = {
             key: fs.readFileSync(__dirname + '/ssl/' + app.get('ssl_key')),
             ca: fs.readFileSync(__dirname + '/ssl/' + app.get('ssl_ca')),
