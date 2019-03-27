@@ -105,6 +105,9 @@
     "options": {
       "remoting": {
         "sharedMethods": {
+          "create": false,
+          "prototype.updateAttributes": false,
+          "save": true
         }
       }
     }

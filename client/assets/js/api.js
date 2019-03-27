@@ -1,4 +1,7 @@
 
+const clone=function (obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
 
 
 const api = function (url, method, data, cb) {
@@ -24,7 +27,7 @@ const api = function (url, method, data, cb) {
     url='/api/'+url;
     var settings = {
         url: url,
-        data: data,
+        data: clone(data),
         method: method,
         xhrFields: {
             withCredentials: true
@@ -53,6 +56,10 @@ const api = function (url, method, data, cb) {
             closeButton: true,
             progressBar: true,
         });
+        if (e.code ==='INVALID_TOKEN' || e.code==='AUTHORIZATION_REQUIRED') {
+            window.localStorage.setItem('location_hash',window.location.hash.substr(1));
+            logout();
+        }
         cb(e);
     });
 }

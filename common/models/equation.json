@@ -6,7 +6,12 @@
   "mixins": {
     "AclMixin": true,
     "RemoteMixin": true,
-    "HooksMixin": true
+    "HooksMixin": true,
+    "SaveMixin": {
+      "properties": [
+        "symbol"
+      ]
+    }
   },
   "http": {
     "path": "equation"
@@ -15,12 +20,21 @@
     "name": {
       "type": "string"
     },
+    "symbol": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "string"
+    },
     "equation": {
       "type": "string",
       "dataType": "text"
     },
     "color": {
       "type": "string"
+    },
+    "pointCount": {
+      "type": "number"
     }
   },
   "validations": [],

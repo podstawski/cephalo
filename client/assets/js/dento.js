@@ -3,8 +3,15 @@ var globalDevices={};
 var globalProjects=[];
 var currentuser;
 
-$('#logout').click(function () {
-    websocket.emit('logout');
+
+function logout() {
+    loadPage('main.html');
+    $('._after-login').removeClass('_after-login').addClass('after-login');
+    $('body').removeClass('sidebar-nav').addClass('sidebar-off-canvas');
+}
+
+$('.logout').click(function () {
+    api('/user/logout','POST+WAIT',logout);
 });
 
 
@@ -20,12 +27,15 @@ function setBreadcrumbs(b) {
     $(html).insertAfter('.breadcrumb .breadcrumb-home');
 }
 
-var buildAsideMenu = function(data) {
+var buildAsideMenu = function(err,data) {
+
+    if (err)
+        return;
 
     var tags={};
 
     for (var i=0;i<data.length; i++) {
-        if (typeof(data[i].tags)=='string') {
+        if (typeof(data[i].tags)==='string') {
             data[i].tags=data[i].tags.replace(',',' ');
             data[i].tags=data[i].tags.replace(/ +/,' ');
             var t=data[i].tags.split(' ');
@@ -49,7 +59,7 @@ var buildAsideMenu = function(data) {
             $('aside.aside-menu #devices .'+$(this).attr('rel')).show();
         });
         
-        if (typeof(drawAsideDevices) == 'function') {
+        if (typeof(drawAsideDevices) === 'function') {
             drawAsideDevices();
         }
     });
@@ -99,12 +109,12 @@ mediaQueryList.addListener(function(mql) {
     
     if (mql.matches) {
         $('body').removeClass('sidebar-nav');
-        if (typeof(printFloor)=='function') printFloor(true);
+        if (typeof(printFloor)==='function') printFloor(true);
         
     } else {
         $('.breadcrumb').show();
         $('body').addClass('sidebar-nav');
-        if (typeof(printFloor)=='function') printFloor(false);
+        if (typeof(printFloor)==='function') printFloor(false);
     }
     
     return false;

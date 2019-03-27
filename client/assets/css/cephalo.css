@@ -181,9 +181,15 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     z-index: 120;
 }
 
+#rtg-container .draggable-container .line svg {
+    width: 100%;
+    height: 100%;
+}
+
+
 #rtg-container .draggable-container .line svg line {
     stroke:red;
-    stroke-width:1;
+    stroke-width:2;
     width: 100%;
     height: 100%;    
 }
@@ -436,7 +442,7 @@ aside .avatar {
 }
 
 aside .pull-left {
-    height: 70px;
+    height: 30px;
 }
 
 aside hr {
@@ -445,9 +451,15 @@ aside hr {
 }
 aside .device-element {
     width: 35px;
-    height: 70px;
+    height: 35px;
+    padding-top: 15px;
+    cursor: pointer;
 }
 
+aside .remove {
+    font-weight: bold;
+    cursor: pointer;
+}
 
 
 .device-container {
@@ -854,9 +866,9 @@ iframe {
 
 .aside-menu .tab-content .all {
     clear: both;
-    padding-bottom: 5px;
+    padding-bottom: 1px;
     border-bottom: 1px solid #f2f2f2;
-    margin-bottom: 5px;
+    margin-bottom: 0px;
 }
 
 .aside-menu .tab-content {

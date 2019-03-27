@@ -164,6 +164,7 @@ function setUpUrl(url) {
 function loadPage(url) {
 
 	var urla=url.split(',');
+
 	$.ajax({
 		type : 'GET',
 		url : $.subPagesDirectory + urla[0],
@@ -183,7 +184,8 @@ function loadPage(url) {
 			}).delay(250).animate({ opacity : 1 }, 0);
 		},
 		error : function() {
-			window.location.href = $.page404;
+			console.log($.subPagesDirectory + urla[0],url);
+			//window.location.href = $.page404;
 		}
 
 	});

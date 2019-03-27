@@ -14,12 +14,16 @@ var uploadImage=null;
 var originalSvgWidth;
 var callingDevice;
 var lastDraggedElement=null;
-var editmode=false;
+var editmode=true;
 var deviceRatio=5;
 var minDeviceRatio=3;
 var maxDeviceRatio=10;
 var busRequested=false;
 var ctrlOn=false;
+var maxPointCount=0;
+var currentPolygonColor='';
+var currentPolygonTypeId='';
+var currentPolygonSymbol='';
 
 var lastRtgDebugTxt='';
 
@@ -230,12 +234,13 @@ var calculateWH = function (autoheight) {
     moveElements();
 }
 
-var drawPolygon = function(points,id,data,element,labelpoint) {
+var drawPolygon = function(points,id,data,element,labelpoint,color,isDrawing,symbol) {
+    console.log('drawPolygon',points,id,data,element,labelpoint,color,isDrawing,symbol);
     var name;
     if (data!=null) name=data.name||'';
     else name='';
   
-    if (labelpoint==null && element!=null && typeof(element.data.lx)!='undefined') {
+    if (labelpoint==null && element!=null && typeof(element.data.lx)!=='undefined') {
         labelpoint={x:element.data.lx,y:element.data.ly};
     }
     var labelstyle='';
@@ -260,8 +265,8 @@ var drawPolygon = function(points,id,data,element,labelpoint) {
             if (Math.abs(points2[i].y-points2[j].y)<10) points2[i].y=points2[j].y;
         }
         //calculate bounds:
-        if (points2[i].x<minx || minx==0) minx=points2[i].x;
-        if (points2[i].y<miny || miny==0) miny=points2[i].y;
+        if (points2[i].x<minx || minx===0) minx=points2[i].x;
+        if (points2[i].y<miny || miny===0) miny=points2[i].y;
         if (points2[i].x>maxx ) maxx=points2[i].x;
         if (points2[i].y>maxy ) maxy=points2[i].y;
               
@@ -272,27 +277,41 @@ var drawPolygon = function(points,id,data,element,labelpoint) {
     }
     
     var polygon;
+
+    var style=[];
+    if (color)
+        style.push('stroke:'+color);
+
+    if (style.length>0)
+        style=' style="'+style.join(';')+'"';
+    else
+        style='';
+
+
+    var cl = isDrawing ? ' drawing':'';
+    if (symbol)
+        cl+=' type-'+symbol;
     if (points2.length>2) {
-        polygon='<div class="polygon element"><div '+labelstyle+'>'+name+'</div><svg><polygon points="'+p.trim()+'"/></svg></div>';
-    } else if (points2.length==2) {
-        polygon='<div class="line element"><svg><line x1="'+Math.round(points2[0].x - minx)+'" y1="'+Math.round(points2[0].y - miny)+'" x2="'+Math.round(points2[1].x - minx)+'" y2="'+Math.round(points2[1].y - miny)+'"/></svg></div>';
+        polygon='<div class="polygon'+cl+' element"><div '+labelstyle+'>'+name+'</div><svg><polygon'+style+' points="'+p.trim()+'"/></svg></div>';
+    } else if (points2.length===2) {
+        polygon='<div class="line'+cl+' element"><svg><line'+style+' x1="'+Math.round(points2[0].x - minx)+'" y1="'+Math.round(points2[0].y - miny)+'" x2="'+Math.round(points2[1].x - minx)+'" y2="'+Math.round(points2[1].y - miny)+'"/></svg></div>';
     } else {
         return;
     }
     
     
     var poli = $(polygon).appendTo('#rtg-container .draggable-container').css({left: minx, top:miny});
-    poli.width(maxx-minx);
-    poli.height(maxy-miny);
+    poli.width(maxx-minx>0?maxx-minx:1);
+    poli.height(maxy-miny>0?maxy-miny:1);
 
     
-    if (id==null) id=0;
+    if (id==null) id='id-'+Math.random();
     
  
     poli.attr('id',id);
     poli.attr('title',name);
     
-    if (points2.length==2) return poli;
+    if (points2.length===2) return poli;
     
     if(element==null) {
         element={
@@ -313,42 +332,9 @@ var drawPolygon = function(points,id,data,element,labelpoint) {
         element.ly=labelpoint.y;
     }
     
-    
-    poli.dblclick(function(e){
-        if (!editmode) return;
-        if (polygonMode) return;
-    
-        modalCleanup();
-        $('#edit-element').addClass('polygon-edit');
-        $('#edit-element .modal-header input').val(name);
-        $('#edit-element').attr('rel',id);
-        $('#edit-element .modal-body').html('');
-        $('#edit-element').modal('show');
-        
-        uploadImage=null;
-        
-        element.data.admin=currentuser.admin;
-        $.smekta_file('views/smekta/rtg-polygon.html',element.data,'#edit-element .modal-body',function(){
-            $('#edit-element .modal-body .translate').translate();
-        });
-        
-    });
-    
-    var label=poli.find('div');
-    label.draggable({
-        containment: 'parent',
-        stop: function(){
-            
-            var point=calculatePoint({x:$(this).position().left, y:$(this).position().top});
-            var data={id: $(this).parent().attr('id'),lx: point.x, ly: point.y};
-            
-            websocket.emit('db-save','rtg',data);
-        }    
-    });
-    
-    zoomDraggableFix(label);
-    
-    if (!editmode) label.draggable('disable');
+
+
+
  
     return poli;
 }
@@ -514,21 +500,23 @@ var removePolygonPoints=function() {
         delete(polygonPoints[i].dot);
     }
     polygonPoints=[];
-    $('#rtg-container .draggable-container .line').remove();
+
 };
 
 var createPolygonFromPoints = function() {
-    
-    drawPolygon(polygonPoints);
 
-    
-    polygonMode=false;
-    $('.breadcrumb .icon-note').removeClass('active');
-    $('#rtg-container .rtg-polygon-dashboard').hide();
-    $('#rtg-container .draggable-container .line').remove();
-    
-    websocket.emit('db-save','rtg',{rtg: thisrtg, type:'polygon', points:polygonPoints});
-    removePolygonPoints();
+    $('#rtg-container .draggable-container .drawing').remove();
+    drawPolygon(polygonPoints,null,null,null,null,currentPolygonColor,false,currentPolygonSymbol);
+
+    api('/line','POST',{rtgId: thisrtg, equationId: currentPolygonTypeId, points:polygonPoints},function(err,data){
+        polygonMode=false;
+        $('#rtg-container .rtg-polygon-dashboard').hide();
+
+        if (err)
+            return;
+        removePolygonPoints();
+    });
+
 }
 
 
@@ -549,6 +537,8 @@ var rtgDraw=function(err,data) {
 
     setBreadcrumbs([{name: description, href:'patient.html,'+data.patient.id},
         {name: data.name, href:'rtg.html,'+data.id}]);
+
+    $('.breadcrumb .breadcrumb-menu .btn-rtg').show();
 
     
     $('#rtg-container img.svg').attr('src',data.preview).load(function(){
@@ -582,20 +572,17 @@ var rtgDraw=function(err,data) {
             
             polygonPoints.push(point);
             point.dot.attr('title',polygonPoints.length);
-  
-            
-            if (polygonPoints.length>2) {
-                var l=polygonPoints.length-1;
-                var last2first = zoom*Math.sqrt( Math.pow(polygonPoints[0].x*w - polygonPoints[l].x*w,2) + Math.pow(polygonPoints[0].y*h - polygonPoints[l].y*h,2) );
-         
-                if (last2first<dotW) createPolygonFromPoints();
-            }
+
+
+
             
             if (polygonPoints.length>1) {
                 var l=polygonPoints.length-1;
-                p=drawPolygon([polygonPoints[l],polygonPoints[l-1]],'line-'+l);                
+                p=drawPolygon([polygonPoints[l],polygonPoints[l-1]],'line-'+l,null,null,null,currentPolygonColor,true);
             }
-            
+
+            if (polygonPoints.length===maxPointCount)
+                createPolygonFromPoints();
             
             drawPolygonPoints();
         }
@@ -719,208 +706,70 @@ var drawAsideDevices = function() {
     $('aside .device-element').each(function(){
         $(this).text('');
         var symbol=$(this).attr('rel');
-        var device=new Device(globalDevices[symbol],zoomContainer);
-        device.parent($(this));
-        device.draw({
-            helper: "clone",
-            appendTo: "body",
-            stop: function(e,ui) {
-                var ctn=$('#rtg-container');
-                
-                if (ui.offset.top>ctn.offset().top
-                    &&
-                    ui.offset.top<ctn.offset().top+ctn.height()
-                    &&
-                    ui.offset.left>ctn.offset().left
-                    &&
-                    ui.offset.left<ctn.offset().left+ctn.width()
-                    ){
-                        var zoom=zoomContainer();
-                        var w=parseFloat($('#rtg-container .draggable-container .svg').width());
-                        var h=parseFloat($('#rtg-container .draggable-container .svg').height());
-                        
-                        ctn=$('#rtg-container .draggable-container');
-                        
-                        var data=device.attr();
-                        
-                        data.point={
-                            x:((ui.offset.left/zoom - ctn.offset().left))/w,
-                            y:((ui.offset.top/zoom - ctn.offset().top))/h
-                        }
-                        
-                        rtgDebug('Drop: '+Math.round(ui.offset.left - ctn.offset().left)+' x '+Math.round(ui.offset.top - ctn.offset().top));
-                        
+        var pointCount=parseInt($(this).attr('points'));
+        var color=$(this).attr('relcolor');
+        var equationId=parseInt($(this).attr('equationId'))
 
-                        data.rtg=thisrtg;
-                        data.type=symbol;
-                        data.controls=globalDevices[symbol].controls||[];
-                        
-                        websocket.emit('db-save','rtg',data);
-                    
-                }
-                
-            }
-            
-        });
-        
-        device.dom().dblclick(function(){
-            
-            if (!editmode) return;
-            
-            callingDevice=device;
-            modalCleanup();
-            $('#edit-element').addClass('aside-edit');
-            $('#edit-element input[name="name"]').val(device.attr('name'));                        
-            $('#edit-element').modal('show');
-            
-            var data={label:device.attr('label')};
-            
-            calculateLabelForSmekta(data,symbol);            
-            
-            $.smekta_file('views/smekta/aside-device.html',data,'#edit-element .modal-body',function(){
-                $('#edit-element .modal-body .translate').translate();
-            });
-            
-        });
+
+        var html;
+        var style='stroke-width:1; stroke:'+color;
+        if (pointCount===1)
+            html='<img src="assets/img/dot.png" class="polygon-dot"/>';
+        if (pointCount===2)
+            html='<div class="line" style="height:30px"><svg><line style="'+style+'" x1="1" y1="10" x2="30" y2="1"/></svg></div>';
+        if (pointCount>2)
+            html='<div class="polygon"></div><svg><polygon style="'+style+'; fill: none" points="30,1 1,8 30,16"/></svg></div>';
+
+        $(this).html(html);
+        $(this).click(function () {
+            polygonMode=true;
+            maxPointCount=pointCount;
+            currentPolygonColor=color;
+            currentPolygonTypeId=equationId;
+            currentPolygonSymbol=symbol;
+            $('#rtg-container .draggable-container .type-'+symbol).remove();
+            $('#rtg-container .rtg-polygon-dashboard').show();
+        })
     });
-    
 }
 
-var printRtg = function (start) {
-    rtgDebug('Prn: p: '+$('.draggable-container').position().left+' x '+$('.draggable-container').position().top+', w: '+$('#rtg-container').width()+', '+$('.draggable-container').width());
-    zoomContainer(1,1);
-    $('.draggable-container').css({left:0, top:0});
-    calculateWH(start);
-}
+
 
 
 $(function(){
 
     var hash=window.location.hash;
     hash=hash.split(',');
-    if (hash.length==1 || isNaN(parseInt(hash[1])))
+    if (hash.length===1 || isNaN(parseInt(hash[1])))
         return;
 
 
     thisrtg=parseInt(hash[1]);
     api('/rtg/'+thisrtg,rtgDraw);
 
-    api('/equation',buildAsideMenu);
+    var filter=encodeURIComponent('{"where":{"equation":null}}')
+    api('/equation?filter='+filter,buildAsideMenu);
 
-    var icon_selector='.breadcrumb .breadcrumb-menu i.icon-note';
-    $(icon_selector).removeClass('active');
-    
-    $('.breadcrumb .btn-rtg').not('.edit-mode-only').fadeIn(200);
-   
     
     busRequested=false;
     
 
     
     
-    if (typeof($.breadcrumbIconClick)=='undefined') {
+    if (typeof($.breadcrumbIconClick)==='undefined') {
         $.breadcrumbIconClick=true;
 
-        /*
-         *draw polygon mode toggler
-         */
-        $(document).on('click',icon_selector,function(){
-            if (polygonMode) {
-                polygonMode=false;
-                $(icon_selector).removeClass('active');
-                $('#rtg-container .rtg-polygon-dashboard').hide();
-                removePolygonPoints();
-            } else {
-                polygonMode=true;
-                $(icon_selector).addClass('active');
-                $('#rtg-container .rtg-polygon-dashboard').show();
-            }
-        });
-        
-        $(document).on('click','.breadcrumb .breadcrumb-menu i.icon-printer',function(){
-            $('body').removeClass('sidebar-nav');
-            $('.breadcrumb').hide();
-            
-            window.print();
-        });
-        
-        $(document).on('click','.breadcrumb .edit-mode-toggle',function(){
-            $(this).toggleClass('active');
-            $('#rtg-container').toggleClass('previewmode').toggleClass('editmode');
-            $(this).children().toggleClass('active');
-            editmode=$(this).hasClass('active');
-            
-            if (editmode) {
-                $('.breadcrumb .edit-mode-only').show();
-                $('#rtg-container .draggable-container .device-container').draggable('enable');
-                $('#rtg-container .draggable-container .polygon div').draggable('enable');
-                
-            } else {
-                $('.breadcrumb .edit-mode-only').hide();
-                $('#rtg-container .draggable-container .device-container').draggable('disable');
-                $('#rtg-container .draggable-container .polygon div').draggable('disable');
-                            
-            }
-        });      
-        
-        $(document).on('click','.breadcrumb .aside-toggle',function(){
-            $(this).children().toggleClass('active');
-        });
         
         $(document).on('click','.breadcrumb .device-plus',function(){
-            if (deviceRatio<=maxDeviceRatio) {
-                deviceRatio++;
-                moveElements();
-            }
+            zoomContainer(1.1);
             
         });
 
         $(document).on('click','.breadcrumb .device-minus',function(){
-            if (deviceRatio>=minDeviceRatio) {
-                deviceRatio--;
-                moveElements();
-            }
-            
+            zoomContainer(0.9);
         });
 
-        $(document).keyup(function(e){
-            
-            if (e.which==17) {
-                rtgDebug('Ctrl-UP, editmode: '+editmode);
-                ctrlOn=false;
-            }
-        });
-        
-        $(document).keydown(function(e){
-            
-            if (e.which==17) {
-                rtgDebug('Ctrl-DOWN, editmode: '+editmode);
-                ctrlOn=true;
-            }
-            
-            if (lastDraggedElement && e.which>=37 && e.which<=40) {
-                event.preventDefault();
-                
-                var d={id:lastDraggedElement.id};
-                var p=lastDraggedElement.element.position();
-                
-                if (p.top>0 || p.left>0) {
-                
-                    
-                    if (e.which==37) p.left=Math.round(p.left)-1;
-                    if (e.which==38) p.top=Math.round(p.top)-1;
-                    if (e.which==39) p.left=Math.round(p.left)+1;
-                    if (e.which==40) p.top=Math.round(p.top)+1;
-                    
-                    
-                    p.x=p.left;
-                    p.y=p.top;
-                    d.point=calculatePoint(p);
-        
-                    websocket.emit('db-save','rtg',d);
-                }
-            }
-        });
+
         
     }
 
