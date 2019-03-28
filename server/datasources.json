@@ -9,17 +9,7 @@
     "connector": "mysql-custom",
     "user": "kiedymsza",
     "connectionLimit": 10,
-    "connectTimeout": 20000,
-    "acquireTimeout": 20000,
-    "lazyConnect": true
-  },
-  "storage": {
-    "name": "storage",
-    "connector": "loopback-component-storage",
-    "provider": "google",
-    "projectId": "carnet-dev",
-    "keyFilename": "./server/carnet-dev-bebe36c84a47.json",
-    "nameConflict": "makeUnique"
+    "lazyConnect": false
   },
   "mail": {
     "name": "mail",

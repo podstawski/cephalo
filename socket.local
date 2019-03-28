@@ -1,0 +1,3 @@
+rm -f /cloudsql/jemyrazem
+socat -d -d UNIX-LISTEN:/cloudsql/jemyrazem,fork TCP4:173.194.250.90:3306
+

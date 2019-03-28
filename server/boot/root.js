@@ -9,6 +9,10 @@ module.exports = function(app) {
     res.sendFile(path.join(__dirname+'/../../client/index.html'));
   });
 
+  router.get('/_ah/.*', function (req, res) {
+      res.end('OK');
+  });
+
   router.get(/.+\/[^\/]+\.[a-z0-9]+$/, function (req, res) {
     let url=req.url;
     let qm=url.indexOf('?');

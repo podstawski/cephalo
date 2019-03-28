@@ -47,7 +47,7 @@ module.exports = function (User) {
                                if (err)
                                    return cb(err);
 
-                               return cb(null, {token: token.id});
+                               return cb(null, {token: token.id, id:token.userId});
                            });
                        })
                     });
@@ -56,11 +56,11 @@ module.exports = function (User) {
 
 
                 if (!previousAccessToken)
-                    return cb(null, {token: token.id});
+                    return cb(null, {token: token.id, id:token.userId});
 
 
                 token.destroy(options, function (err) {
-                    return cb(err, {token: previousAccessToken.id});
+                    return cb(err, {token: previousAccessToken.id, id:previousAccessToken.userId});
                 });
             });
         })

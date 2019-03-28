@@ -5,7 +5,6 @@ const {intersection, extend} = require('lodash');
 const {SqlConnector} = require('loopback-connector');
 const {ParameterizedSQL} = SqlConnector;
 const {MySQL, initialize} = require('loopback-connector-mysql');
-const mysql = require('mysql');
 const debug = require('debug')('connector');
 const {sprintf} = require('sprintf-js');
 const {LoopbackError} = require('../common/utils');
@@ -13,14 +12,18 @@ const {LoopbackError} = require('../common/utils');
 class Connector extends MySQL {
   constructor(settings) {
     //console.log('constructor', settings);
-
     super(settings);
   }
 
+
   connect(callback) {
-    setTimeout(super.connect.bind(this), 0, callback);
-    //super.connect(callback);
+    console.log("CONNECT");
+    if (this.settings.lazyConnect)
+      setTimeout(super.connect.bind(this), 0, callback);
+    else
+      return super.connect(callback);
   };
+
 
   execute(sql, params, options, callback) {
     // console.log('execute', sql);
@@ -458,7 +461,7 @@ class Connector extends MySQL {
   }
 }
 
-
+/*
 module.exports = function (app) {
 
   return {
@@ -471,4 +474,19 @@ module.exports = function (app) {
       dataSource.connector.dataSource = dataSource;
     }
   };
+};
+
+*/
+
+module.exports = app => {
+    return {
+        Connector,
+        initialize: (dataSource, callback) => {
+            initialize.call(this, dataSource, callback);
+
+            dataSource.connector = new Connector(dataSource.settings);
+            dataSource.connector.app = app;
+            dataSource.connector.dataSource = dataSource;
+        }
+    };
 };

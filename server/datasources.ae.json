@@ -1,0 +1,13 @@
+{
+
+  "mysql": {
+    "socketPath": "/cloudsql/jemyrazem:mysql56",
+    "database": "cefalo",
+    "password": "crucemtuam",
+    "name": "mysql",
+    "connector": "mysql-custom",
+    "user": "kiedymsza",
+    "connectionLimit": 10,
+    "lazyConnect": false
+  }
+}

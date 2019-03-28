@@ -85,8 +85,21 @@ var busSend=function(haddr,state) {
    return 'OK';
 }
 
+var logoUsername=function() {
+    var info=window.localStorage.getItem('user_info');
+
+    if (!info)
+        return null;
+    info=info.split(':');
+    $('#username').text(info[1]);
+    $('#useravatar').attr('src',$('#useravatar').attr('relpath')+'/'+info[0]+'.jpg');
+
+    return info[1];
+}
 
 $(function(){
+
+    logoUsername();
     
     (function() {
         var loadPageParent = window.loadPage;

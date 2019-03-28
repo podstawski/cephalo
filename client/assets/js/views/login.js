@@ -18,6 +18,9 @@ $(window).bind('resize', verticalAlignMiddle);
 if (!window._login_click) {
     window._login_click=true;
 
+    $('._after-login').removeClass('_after-login').addClass('after-login');
+    $('body').removeClass('sidebar-nav').addClass('sidebar-off-canvas');
+
     $(document).on('click', '#login', function () {
         var data = {};
 
@@ -29,7 +32,9 @@ if (!window._login_click) {
 
             if (!err && token && token.token) {
                 window.localStorage.setItem('swagger_accessToken', token.token);
-                $('#username').text(data.username);
+                window.localStorage.setItem('user_info',token.id+':'+data.username);
+                logoUsername();
+
 
                 $('.after-login').removeClass('after-login').addClass('_after-login');
                 $('body').addClass('sidebar-nav').removeClass('sidebar-off-canvas');
