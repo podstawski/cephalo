@@ -47,7 +47,7 @@ const api = function (url, method, data, cb) {
     return $.ajax(settings).done(function(data){
         $('div.wait').hide();
         Pace.restart(2000);
-        cb(null,data);
+        cb&&cb(null,data);
     }).fail(function(err) {
         Pace.restart();
         var e=err.responseJSON;

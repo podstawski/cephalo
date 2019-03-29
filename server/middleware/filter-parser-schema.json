@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "required": false,
+      "minimum": 1
+    },
+    "offset": {
+      "type": "integer",
+      "required": false,
+      "minimum": 0
+    },
+    "where": {
+      "id": "where",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "and": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "where"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "or": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "where"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "patternProperties": {
+            "^(?!(?:and|or)$)[a-zA-Z0-9_.,]+$": {
+              "type": [
+                "string",
+                "integer",
+                "object",
+                "number",
+                "null"
+              ]
+            }
+          },
+          "minProperties": 1,
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

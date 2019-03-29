@@ -45,7 +45,7 @@
     "options": {
       "remoting": {
         "sharedMethods": {
-          "create": false,
+          "create": true,
           "login": false,
           "logout": true,
           "customLogin": true

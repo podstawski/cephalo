@@ -1,15 +1,19 @@
 'use strict';
 
 const {format} = require('util');
-const {intersection, extend} = require('lodash');
 const {SqlConnector} = require('loopback-connector');
 const {ParameterizedSQL} = SqlConnector;
 const {MySQL, initialize} = require('loopback-connector-mysql');
-const debug = require('debug')('connector');
+
 const {sprintf} = require('sprintf-js');
 const {LoopbackError} = require('../common/utils');
 
+
+
+
 class Connector extends MySQL {
+
+
   constructor(settings) {
     //console.log('constructor', settings);
     super(settings);
@@ -17,7 +21,6 @@ class Connector extends MySQL {
 
 
   connect(callback) {
-    console.log("CONNECT");
     if (this.settings.lazyConnect)
       setTimeout(super.connect.bind(this), 0, callback);
     else
@@ -255,9 +258,7 @@ class Connector extends MySQL {
       params = params.concat(whereStmts[k].params);
     }
 
-    /*
-      mozliwosc porownywania z polami w bazie
-     */
+
     let questionMarkTable = [];
     for (let i = 0; i < sqls.length; i++) {
       let sqla = sqls[i].split('?');
@@ -304,9 +305,6 @@ class Connector extends MySQL {
     }
 
 
-    /*
-      koniec: porownywanie z polami z bazy
-     */
 
 
     let whereStmt = new ParameterizedSQL({
@@ -459,34 +457,30 @@ class Connector extends MySQL {
     });
 
   }
+
+
 }
 
-/*
-module.exports = function (app) {
-
-  return {
-    Connector,
-    initialize: function (dataSource, callback) {
-      const self = this;
-      initialize.call(self, dataSource, callback);
-      dataSource.connector = new Connector(dataSource.settings);
-      dataSource.connector.app = app;
-      dataSource.connector.dataSource = dataSource;
-    }
-  };
-};
-
-*/
 
 module.exports = app => {
     return {
         Connector,
         initialize: (dataSource, callback) => {
-            initialize.call(this, dataSource, callback);
+            initialize.call(this, dataSource);
 
             dataSource.connector = new Connector(dataSource.settings);
             dataSource.connector.app = app;
             dataSource.connector.dataSource = dataSource;
+
+            if (callback && !dataSource.settings.lazyConnect)
+                dataSource.connector.connect(callback);
+            else if (callback)
+                process.nextTick(function() {
+                    callback();
+                });
+
+
+
         }
     };
 };

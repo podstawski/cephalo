@@ -10,15 +10,19 @@ const path = require('path');
 const fs = require('fs');
 const loopback = require('loopback');
 const boot = require('loopback-boot');
-const app = loopback();
 const connector = require('./connector');
+const app = loopback();
 
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 app.connector('mysql-custom', connector(app));
+
+app._ahStopped = true;
 
 app.start = function () {
     const listener = function () {
         const baseUrl = app.get('url').replace(/\/$/, '');
-
+        app.emit('started', baseUrl);
         if (process.env.NODE_ENV !== 'test') {
             console.log('Web server listening at: %s', baseUrl);
             if (app.get('loopback-component-explorer')) {
@@ -26,7 +30,6 @@ app.start = function () {
                 console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
             }
         }
-        app.emit('started', baseUrl);
     };
 
     if (app.get('url') && app.get('url').indexOf('https') === 0) {

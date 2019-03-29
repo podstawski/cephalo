@@ -43,8 +43,7 @@ module.exports = (app) => {
   if (app.datasources.mysql.settings.lazyConnect) {
     tryConnect();
   } else {
-    //app.on('started',connected);
-    setTimeout(connected,10000);
+    app.on('started',connected);
   }
 
 

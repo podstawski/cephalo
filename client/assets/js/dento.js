@@ -27,44 +27,7 @@ function setBreadcrumbs(b) {
     $(html).insertAfter('.breadcrumb .breadcrumb-home');
 }
 
-var buildAsideMenu = function(err,data) {
 
-    if (err)
-        return;
-
-    var tags={};
-
-    for (var i=0;i<data.length; i++) {
-        if (typeof(data[i].tags)==='string') {
-            data[i].tags=data[i].tags.replace(',',' ');
-            data[i].tags=data[i].tags.replace(/ +/,' ');
-            var t=data[i].tags.split(' ');
-            for (var j=0; j<t.length; j++) {
-                if (t[j].length) tags[t[j]]=true;
-            }
-        }
-        
-        globalDevices[data[i].symbol]=data[i];
-    }
-
-    
-    var tags2=[];
- 
-    for (var k in tags) tags2.push({tag:k});
-
-    $.smekta_file('views/smekta/aside-devices.html',{tags:tags2,devices:data},'aside.aside-menu',function(){
-        $('aside.aside-menu .translate').translate();
-        $('aside.aside-menu ul.nav-tabs a.nav-link').click(function(){
-            $('aside.aside-menu #devices .all').hide();
-            $('aside.aside-menu #devices .'+$(this).attr('rel')).show();
-        });
-        
-        if (typeof(drawAsideDevices) === 'function') {
-            drawAsideDevices();
-        }
-    });
-
-}
 
 
 

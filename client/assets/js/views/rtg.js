@@ -5,7 +5,7 @@
 
 var polygonMode=false;
 var polygonPoints=[];
-var elements=[];
+var elements={};
 var lastDragEvent=0;
 var thisrtg=0;
 var dotW=16;
@@ -24,20 +24,10 @@ var maxPointCount=0;
 var currentPolygonColor='';
 var currentPolygonTypeId='';
 var currentPolygonSymbol='';
+var equation={};
 
-var lastRtgDebugTxt='';
 
-var rtgDebug=function(txt) {
-    if (lastRtgDebugTxt!=txt) {
-        var dst=$('#rtg-container .draggable-container .rtg-debug-container .rtg-debug-contents');
-        if (dst.length==1) {
-            dst.append('<p>'+txt+'</p>');
-            dst.scrollTop(dst[0].scrollHeight);
-        }
 
-    }
-    lastRtgDebugTxt=txt;
-}
 
 var modalCleanup = function() {
     lastDraggedElement=null;
@@ -118,6 +108,7 @@ var pointInPolygonCheck = function (point, vs) {
 };
 
 var roomOfDevice = function(obj) {
+  return;
     for (var i=0; i<elements.length; i++) {
         if (elements[i].type!='polygon') continue;
         var points=[];
@@ -157,9 +148,7 @@ var calculatePoint = function(p,dbg) {
             y: p.y*h
         };
     }
-    
-    if (dbg) rtgDebug(p.x+','+p.y+' &raquo; '+point.x+','+point.y+' ('+w+','+h+')');
-    //console.log(p.x,p.y,'->',point.x,point.y,'w:'+w,'h:'+h,zoom);
+
     
     return point;
 }
@@ -167,24 +156,10 @@ var calculatePoint = function(p,dbg) {
 
 
 var moveElements = function() {
-   
-    for (var i=0;i<elements.length;i++) {
-        switch (elements[i].type) {
-            case 'polygon': {
-                elements[i].element.remove();
-                drawPolygon(elements[i].points,elements[i].id,elements[i].data,elements[i]);
-                break;
-            }
-            default: {
-                drawDeviceElement(elements[i].data,elements[i]);
-                break;
-            }
-            
-        }
-       
-    }
-    
 
+  $('#rtg-container .draggable-container .element').remove();
+  for (var k in elements)
+    drawPolygon(elements[k].points,elements[k].id,elements[k].data,elements[k].color,false,k);
 }
 
 var drawPolygonPoints = function() {
@@ -205,9 +180,7 @@ var drawPolygonPoints = function() {
 
 }
 
-var debugContainer = function() {
-    rtgDebug('F/C:'+$('#rtg-container').width()+'/'+$('#rtg-container .draggable-container').width()+', z:'+Math.round(10*zoomContainer())/10);
-}
+
 
 var calculateWH = function (autoheight) {
     
@@ -228,28 +201,24 @@ var calculateWH = function (autoheight) {
     $('img.svg').width($('#rtg-container').width());
     $('#rtg-container .draggable-container').width($('#rtg-container').width());
 
-    debugContainer();
-    
+
     drawPolygonPoints();
     moveElements();
 }
 
-var drawPolygon = function(points,id,data,element,labelpoint,color,isDrawing,symbol) {
-    console.log('drawPolygon',points,id,data,element,labelpoint,color,isDrawing,symbol);
+var drawPolygon = function(points,id,data,color,isDrawing,symbol) {
+    //console.log('drawPolygon',points,id,data,color,isDrawing,symbol);
     var name;
-    if (data!=null) name=data.name||'';
-    else name='';
-  
-    if (labelpoint==null && element!=null && typeof(element.data.lx)!=='undefined') {
-        labelpoint={x:element.data.lx,y:element.data.ly};
-    }
-    var labelstyle='';
-    if (labelpoint!=null) {
-        var lp=calculatePoint(labelpoint);
-        labelstyle='style="left: '+lp.x+'px; top: '+lp.y+'px;"';
-    }
-    
-    
+
+    if (typeof data==='string')
+      name=data;
+    else if (data && data.equation)
+      name=data.equation.name||'';
+    else if (symbol)
+      name=symbol;
+    else
+      name='';
+
     
     var points2=[],p='';
     for (var i=0; i<points.length; i++) points2.push(calculatePoint(points[i]));
@@ -292,52 +261,81 @@ var drawPolygon = function(points,id,data,element,labelpoint,color,isDrawing,sym
     if (symbol)
         cl+=' type-'+symbol;
     if (points2.length>2) {
-        polygon='<div class="polygon'+cl+' element"><div '+labelstyle+'>'+name+'</div><svg><polygon'+style+' points="'+p.trim()+'"/></svg></div>';
+        polygon='<div class="polygon'+cl+' element"><div>'+name+'</div><svg><polygon'+style+' points="'+p.trim()+'"/></svg></div>';
     } else if (points2.length===2) {
         polygon='<div class="line'+cl+' element"><svg><line'+style+' x1="'+Math.round(points2[0].x - minx)+'" y1="'+Math.round(points2[0].y - miny)+'" x2="'+Math.round(points2[1].x - minx)+'" y2="'+Math.round(points2[1].y - miny)+'"/></svg></div>';
     } else {
         return;
     }
-    
+
+    if (id)
+      $('#rtg-container .draggable-container #'+id).remove();
     
     var poli = $(polygon).appendTo('#rtg-container .draggable-container').css({left: minx, top:miny});
     poli.width(maxx-minx>0?maxx-minx:1);
     poli.height(maxy-miny>0?maxy-miny:1);
 
     
-    if (id==null) id='id-'+Math.random();
+    if (!id)
+      id='id-'+Math.random();
     
  
     poli.attr('id',id);
     poli.attr('title',name);
     
-    if (points2.length===2) return poli;
-    
-    if(element==null) {
-        element={
-            type:'polygon',
-            element:poli,
-            points: points,
-            id:id,
-            name:name,
-            data:data
-        };
-        elements.push(element);
-    } else {
-        element.element=poli;
-    }
-    
-    if (labelpoint!=null) {
-        element.lx=labelpoint.x;
-        element.ly=labelpoint.y;
-    }
-    
+    if (!symbol || isDrawing) return poli;
 
+    elements[symbol]={
+      element:poli,
+      points: points,
+      id:id,
+      name:name,
+      color:color,
+      data:data
+    };
 
-
- 
+    equation[symbol] = new Equation(points,null,color);
+    console.log(elements);
+    recalculateEquation();
     return poli;
 }
+
+
+var recalculateEquation = function (tick) {
+  if (!tick)
+    tick=0;
+  console.log(tick,equation);
+
+  var html='';
+
+
+  for (var k in equation) {
+    var e=equation[k].getEquation();
+    if (!e)
+      continue;
+
+    for (var kk in equation)
+      e=e.replace('{'+kk+'}','equation.'+kk);
+
+    if (e.indexOf('{')!==-1)
+      continue;
+
+    var str='var v='+e+';'
+    try {
+      eval(str);
+      equation[k].set(v);
+      var color=equation[k].getColor() || '#fff';
+
+      html+='<li style="color:'+color+'">'+k+' = '+v+'</li>';
+
+    } catch (err) {
+      console.log(str,err);
+    }
+  }
+
+  $('#left-sidebar').html(html);
+}
+
 
 var zoomDraggableFix = function(obj) {
 
@@ -368,132 +366,6 @@ var zoomDraggableFix = function(obj) {
 }
 
 
-var drawDeviceElement = function(data,element) {
-    
-    if (!element) { 
-        if (data.point.x<0 || data.point.y<0) {
-            if (data.id) websocket.emit('db-remove','rtg',data.id);
-            return;
-        }
-        data.wh=globalDevices[data.type].wh||1;
-        
-        var device=new Device(data, zoomContainer, devicesStateEmiter);
-        device.parent($('#rtg-container .draggable-container'));
-        element={device: device, type: 'device', data: data, id: data.id,ready4click:true};
-        elements.push(element);
-
-    } else {
-        var device=element.device;
-    }
-    
-    var z=data.z||1;
-    data.z=z;
-    var ratio=0.1*z*deviceRatio*$('#rtg-container').width()/originalSvgWidth;
-    
-    device.draw({
-        stop: function(e,ui) {
-            var d={id:data.id};
-            var p=$(this).position();
-            
-            p.x=p.left;
-            p.y=p.top;
-            d.point=calculatePoint(p,true);
-            d.room=roomOfDevice($(this));
-            
-            
-            websocket.emit('db-save','rtg',d);
-            lastDraggedElement={id: data.id,element: $(this)};
-        },
-        dblclickDevice: function(e) {
-            if (!editmode) return;
-            modalCleanup();
-            $('#edit-element').addClass('device-edit');
-            $('#edit-element .modal-header input').val(data.name);
-            $('#edit-element').attr('rel',data.id);
-            $('#edit-element .modal-body').html('');
-            $('#edit-element').modal('show');
-            
-            uploadImage=null;
-            
-            calculateLabelForSmekta(data,data.type);
-            
-            data.admin=currentuser.admin;
-            $.smekta_file('views/smekta/rtg-device.html',data,'#edit-element .modal-body',function(){
-                $('#edit-element .modal-body .translate').translate();
-            });
-        },
-        dblclickControl: function (e) {
-            if (!editmode) return;
-            modalCleanup();
-            $('#edit-element').addClass('control-edit');
-            $('#edit-element .modal-header input').val(data.name);
-            $('#edit-element').attr('rel',data.id);
-            $('#edit-element .modal-body').html('');
-            $('#edit-element').modal('show');
-            
-            var cdata={};
-            for (var i=0; i<this.attributes.length; i++) {
-				var attr=this.attributes[i].nodeName;
-				var val=this.attributes[i].nodeValue;
-                cdata[attr]=val;
-            }
-            
-            var children=$(this).parent().children();
-            for (var i=0; i<children.length; i++) {
-                if (children[i]==this) {
-                    $('#edit-element').attr('rel2',i);
-                }
-            }
-            
-            cdata.admin=currentuser.admin;
-            $.smekta_file('views/smekta/rtg-control.html',cdata,'#edit-element .modal-body',function(){
-                $('#edit-element .modal-body .translate').translate();
-            });
-        }
-    },ratio);
-    
-    element.element = device.dom();
-    device.dom().addClass('element');
-    zoomDraggableFix(device.dom());
-
-    var zoomDevice=function(zoom) {
-        if (!editmode || !ctrlOn) return;
-        var z=data.z;
-        z*=zoom;
-        var d={id: data.id, z: z};
-        data.z=z;
-        device.dom().height(device.dom().height()*z/data.z);
-        device.dom().width(device.dom().width()*z/data.z);
-        websocket.emit('db-save','rtg',d);
-        rtgDebug(data.haddr+' z: '+Math.round(z*10)/10);
-    }
-    
-    if (element.ready4click) {
-        element.ready4click=false;
-        device.dom().click(function(e) {
-            zoomDevice(1.1);
-        }).contextmenu(function(e){
-            zoomDevice(1/1.1);
-            e.preventDefault();
-        });
-        
-    }
-
-    
-    if (!editmode) {
-        device.dom().draggable('disable');
-    }
-    
-    var point=calculatePoint(data.point);
-    
-    device.dom().css({
-        top:point.y,
-        left:point.x
-    });
-    
-    return device.dom();
-}
-
 var removePolygonPoints=function() {
     for (var i=0; i<polygonPoints.length; i++) {
         polygonPoints[i].dot.remove();
@@ -506,7 +378,10 @@ var removePolygonPoints=function() {
 var createPolygonFromPoints = function() {
 
     $('#rtg-container .draggable-container .drawing').remove();
-    drawPolygon(polygonPoints,null,null,null,null,currentPolygonColor,false,currentPolygonSymbol);
+    var data = {
+      equation: {name: currentPolygonSymbol, symbol:currentPolygonSymbol}
+    };
+    drawPolygon(polygonPoints,null,data,currentPolygonColor,false,currentPolygonSymbol);
 
     api('/line','POST',{rtgId: thisrtg, equationId: currentPolygonTypeId, points:polygonPoints},function(err,data){
         polygonMode=false;
@@ -578,7 +453,7 @@ var rtgDraw=function(err,data) {
             
             if (polygonPoints.length>1) {
                 var l=polygonPoints.length-1;
-                p=drawPolygon([polygonPoints[l],polygonPoints[l-1]],'line-'+l,null,null,null,currentPolygonColor,true);
+                p=drawPolygon([polygonPoints[l],polygonPoints[l-1]],'line-'+l,null,currentPolygonColor,true);
             }
 
             if (polygonPoints.length===maxPointCount)
@@ -588,95 +463,20 @@ var rtgDraw=function(err,data) {
         }
     
     });
-    
+
+    var filter=encodeURIComponent('{"include":"equation","where":{"rtgId":'+data.id+'}}');
+    api('/line?filter='+filter,function(err,lines){
+      if (err)
+        return;
+      for (var i=0; i<lines.length; i++) {
+        drawPolygon(lines[i].points,'e-'+lines[i].id,lines[i],lines[i].equation.color,false,lines[i].equation.symbol);
+
+      }
+    });
     
 }
 
 
-var rtgDrawElements=function(data) {
-    
-    var haddrs=[];
-    
-    if (data.length>0 && data[0].rtg!=thisrtg) return;
-    
-    for(var i=0;i<elements.length;i++) {
-        elements[i].toBeDeleted=true;
-    }
-    
-    var newlements=0;
-    var deletedelements=elements.length;
-    
-    for(var i=0;i<data.length;i++) {
-        var matchFound=false;
-        
-        if (data[i].controls!==undefined && data[i].controls!=null) {
-            for (var j=0; j<data[i].controls.length; j++) {
-                if (data[i].controls[j].haddr !== undefined) {
-                    haddrs.push(data[i].controls[j].haddr);
-                }
-            }
-        }
-        for(var j=0; j<elements.length; j++) {
-            if (data[i].id == elements[j].id) {
-                elements[j].toBeDeleted=false;
-                for( var k in data[i]) elements[j].data[k]=data[i][k]; 
-                matchFound=true;
-                deletedelements--;
-                break;
-            }
-        }
-   
-        if (!matchFound) {
-            if (typeof(data[i].name)=='undefined') data[i].name='';
-            newlements++;
-            
-            switch (data[i].type) {
-                case 'polygon': {
-                    var p=null;
-                    if (typeof(data[i].lx)!='undefined') {
-                        p={x:data[i].lx,y:data[i].ly};
-                    }
-                    drawPolygon(data[i].points,data[i].id,data[i],null,p);
-                    break;
-                }
-                default: {
-                    var dom=drawDeviceElement(data[i]);
-                    
-                    if (typeof(data[i].room)=='undefined'|| data[i].room==null) {
-                        setTimeout(function(dom,data){
-                            var room=roomOfDevice(dom);
-                            if (room!=null) {
-                                data.room=room;
-                                websocket.emit('db-save','rtg',data);           
-                            }
-                        },1000,dom,data[i]);
-                        
-                    }
-                    
-                    break;
-                }
-            }        
-            
-        }
-        
-        
-    }
-
-    rtgDebug('Elements: '+data.length+' (new:'+newlements+'), removed: '+deletedelements);
-    debugContainer();
-    for(var i=0;i<elements.length;i++) {
-        
-        if (typeof(elements[i].toBeDeleted)!='undefined' && elements[i].toBeDeleted) {
-            elements[i].element.remove();
-            elements.splice(i,1);
-            i--;
-        }
-    }    
-    
-    moveElements();
-
-    
-}
 
 var calculateLabelForSmekta = function(data,symbol) {
     var vattr=globalDevices[symbol].vattr||'';
@@ -733,7 +533,47 @@ var drawAsideDevices = function() {
     });
 }
 
+var buildAsideMenu = function(err,data) {
 
+  if (err)
+    return;
+
+  var tags={};
+
+  for (var i=0;i<data.length; i++) {
+    if (data[i].equation && data[i].equation.length && data[i].equation.trim().length>0) {
+      equation[data[i].symbol] = new Equation(null,data[i].equation,data[i].color);
+      data.splice(i--,1);
+      continue;
+    }
+    if (typeof(data[i].tags)==='string') {
+      data[i].tags=data[i].tags.replace(',',' ');
+      data[i].tags=data[i].tags.replace(/ +/,' ');
+      var t=data[i].tags.split(' ');
+      for (var j=0; j<t.length; j++) {
+        if (t[j].length) tags[t[j]]=true;
+      }
+    }
+
+    globalDevices[data[i].symbol]=data[i];
+  }
+
+
+  var tags2=[];
+
+  for (var k in tags) tags2.push({tag:k});
+
+  $.smekta_file('views/smekta/aside-devices.html',{tags:tags2,devices:data},'aside.aside-menu',function(){
+    $('aside.aside-menu .translate').translate();
+    $('aside.aside-menu ul.nav-tabs a.nav-link').click(function(){
+      $('aside.aside-menu #devices .all').hide();
+      $('aside.aside-menu #devices .'+$(this).attr('rel')).show();
+    });
+
+    drawAsideDevices();
+  });
+
+}
 
 
 $(function(){
@@ -747,8 +587,8 @@ $(function(){
     thisrtg=parseInt(hash[1]);
     api('/rtg/'+thisrtg,rtgDraw);
 
-    var filter=encodeURIComponent('{"where":{"equation":null}}')
-    api('/equation?filter='+filter,buildAsideMenu);
+    //var filter=encodeURIComponent('{"where":{"equation":null}}')
+    api('/equation',buildAsideMenu);
 
     
     busRequested=false;
@@ -782,12 +622,7 @@ $(function(){
     
     zoomDraggableFix($('#rtg-container .draggable-container'));
     
-    $('#rtg-container .draggable-container .rtg-debug-container').draggable();
-    zoomDraggableFix($('#rtg-container .draggable-container .rtg-debug-container'));
-    
-    $('#rtg-container .draggable-container .rtg-debug-container a').click(function(){
-        $(this).parent().remove();
-    });
+
     
     /*
      *mousewheel: zoom in/out view
@@ -817,89 +652,7 @@ $(function(){
     }
 
     
-    
-    /*
-     *save element
-     */
-    $('#edit-element .btn-info').click(function(){
-        
-		$('#edit-element').modal('hide');
-		var data={id:$('#edit-element').attr('rel')};
-		
-        if (!$('#edit-element').hasClass('control-edit')) {
-            $('#edit-element input,#edit-element select').each(function(){
-                data[$(this).attr('name')]=$(this).val();
-            });
-        }
-        
-        if ($('#edit-element').hasClass('polygon-edit')) {
-            if (uploadImage!=null) {
-                data.img=uploadImage;
-            }
-            
-            websocket.emit('db-save','rtg',data);
-        }
-        
-        if ($('#edit-element').hasClass('aside-edit')) {
-            for (var k in data) {
-                if (data[k]!==undefined) {
-                    callingDevice.attr(k,data[k]);
-                }
-            }
-            callingDevice.draw();
-        }
-            
-            
-        if ($('#edit-element').hasClass('device-edit')) {
-                
-            if (uploadImage!=null) {
-                data.img=uploadImage;
-            }
-            
-            
-            for (var i=0; i<elements.length; i++) {
-                if (elements[i].id==data.id && elements[i].device!==undefined) {
-                    for(var k in data) {
-                        elements[i].device.attr(k,data[k]);
-                    }
-                    elements[i].device.draw();
-                }
-            }
-            
-            websocket.emit('db-save','rtg',data);            
-        } 
-        
 
-        if ($('#edit-element').hasClass('control-edit')) {
-
-            
-            for (var i=0; i<elements.length; i++) {
-                if (elements[i].id==data.id && elements[i].device!==undefined) {
-                    data.controls = elements[i].data.controls;
-                    break;
-                }
-            }
-
-            var rel2=$('#edit-element').attr('rel2');
-            
-            $('#edit-element input,#edit-element select').each(function(){
-                data.controls[rel2][$(this).attr('name')]=$(this).val();
-            });
-            
-            
-            websocket.emit('db-save','rtg',data);
-        }
-        
-
-        
-    });
-    
-    $('#confirm-delete .btn-danger').click(function () {
-        $('#confirm-delete').modal('hide');
-        $('#edit-element').modal('hide');
-        websocket.emit('db-remove','rtg',$('#edit-element').attr('rel'));
-    });
-    
     
     $('#img-input').on('change',function(){
 		var d=$('#img-input').prop('files')[0];

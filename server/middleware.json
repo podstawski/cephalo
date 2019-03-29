@@ -1,8 +1,14 @@
 {
   "initial:before": {
-    "loopback#favicon": {}
+
   },
   "initial": {
+    "body-parser#json": {},
+    "body-parser#urlencoded": {
+      "params": {
+        "extended": true
+      }
+    },
     "compression": {},
     "cors": {
       "params": {
@@ -15,12 +21,12 @@
     "helmet#frameguard": {
       "params": [
         "deny"
-       ]
+      ]
     },
     "helmet#hsts": {
       "params": {
         "maxAge": 0,
-        "includeSubDomains": true
+        "includeSubomains": true
       }
     },
     "helmet#hidePoweredBy": {},
@@ -31,16 +37,20 @@
     }
   },
   "session": {},
-  "auth": {},
+  "auth": {
+  },
   "parse": {},
   "routes": {
+    "./middleware/filter-parser": {},
+    "./middleware/number-parser": {},
     "loopback#rest": {
       "paths": [
         "${restApiRoot}"
       ]
     }
   },
-  "files": {},
+  "files": {
+  },
   "final": {
     "loopback#urlNotFound": {}
   },

@@ -9,30 +9,25 @@
  */
 var usersColumns=[
 	{
-		title: $.translate("Name"),
-		data: "name",
+		title: $.translate("Firstname"),
+		data: "firstName",
 
 	},
-    { title: $.translate("Username"), data: "username" },
+  {
+    title: $.translate("Lastname"),
+    data: "lastName",
+
+  },
+  { title: $.translate("Username"), data: "username" },
 	{ title: $.translate("Email"), data: "email" },
-    {
-		title: $.translate("Active"),
-		data: "active",
+  {
+		title: $.translate("Suspended"),
+		data: "suspended",
 		sortable: false,
 		render: function ( data, type, full, meta ) {
 			var ch=data==1?'checked':'';
 			
-			return '<label class="switch switch-default switch-success"><input rel="active" type="checkbox" class="switch-input" '+ch+'><span class="switch-label"></span><span class="switch-handle"></span></label>';
-		}
-	},
-	{
-		title: $.translate("Admin"),
-		data: "admin",
-		sortable: false,
-		render: function ( data, type, full, meta ) {
-			var ch=data==1?'checked':'';
-			
-			return '<label class="switch switch-default switch-danger"><input rel="admin" type="checkbox" class="switch-input" '+ch+'><span class="switch-label"></span><span class="switch-handle"></span></label>';
+			return '<label class="switch switch-default switch-success"><input rel="suspended" type="checkbox" class="switch-input" '+ch+'><span class="switch-label"></span><span class="switch-handle"></span></label>';
 		}
 	},
     {
@@ -64,7 +59,7 @@ var usersTableDraw = function(data) {
 	var datatable = $('.usertable').dataTable().api();
 
 	for (var i=0; i<data.length;i++) {
-		data[i].DT_RowId=data[i].username;
+		data[i].DT_RowId=data[i].id;
 	
 		for (var j=0; j<usersColumns.length; j++) {
 			if (usersColumns[j].data==null) continue;
@@ -82,17 +77,18 @@ var usersTableDraw = function(data) {
 	
 	
 	datatable.clear();
-    datatable.rows.add(data);
-    datatable.draw();
+  datatable.rows.add(data);
+  datatable.draw();
 }
 
 
 var listenForUsers=function(get) {
-	return;
-	websocket.once('users-all', function(data) {
-		usersTableDraw(data.data);
-	});
-	if (get) websocket.emit('db-get','users');
+
+	api('user',function (err,users) {
+    if (!err)
+      usersTableDraw(users);
+  });
+
 }
 
 
@@ -121,14 +117,14 @@ $(function(){
 	 *request to get all users
 	 */
 	
-	listenForUsers(true);
+	listenForUsers();
 	
 	var clearReferenceClasses = function(newclass) {
 		$('#edit-user').removeClass('add-user').removeClass('edit-user').addClass(newclass);
 		
 	};
 	
-	if (typeof($.usersInitiated)=='undefined') { //prevent multi event
+	if (typeof($.usersInitiated)==='undefined') { //prevent multi event
 	
 		/*
 		 *add plus clicked
@@ -142,7 +138,7 @@ $(function(){
 			$.smekta_file('views/smekta/add-user.html',null,'#edit-user .modal-body',function(){
 				$('#edit-user .modal-body .translate').translate();
 				
-				setTimeout(function(){$('#edit-user .modal-body input').val('');},100);
+				setTimeout(function(){$('#edit-user .modal-body input').val('');},500);
 				
 			});
 					
@@ -175,24 +171,12 @@ $(function(){
 			usersData[id].allProjects = JSON.parse(JSON.stringify(globalProjects));
 			
 			console.log(usersData[id]);
-			
-			if (usersData[id].projects!==undefined && usersData[id].projects!=null) {
-				for(var i=0; i<usersData[id].projects.length; i++) {
-					var pr=parseInt(usersData[id].projects[i]);
-			
-					for (var j=0; j<usersData[id].allProjects.length; j++) {
-						if (usersData[id].allProjects[j].id==pr) {
-							usersData[id].allProjects[j].selected=true;
-							break;
-                        }
-					}
-				}
-            }
+
 			
 			
 			$.smekta_file('views/smekta/edit-user.html',usersData[id],'#edit-user .modal-body',function(){
 				$('#edit-user .modal-body .translate').translate();
-				setTimeout(function(){$('#edit-user .modal-body input[type="password"]').val('');},400);
+				setTimeout(function(){$('#edit-user .modal-body input[type="password"]').val('');},500);
 				
 				$('#edit-user .modal-body select').select2();
 			});	
@@ -201,79 +185,69 @@ $(function(){
 		
 		$(document).on('click','.usertable .switch input',function(e){
 			
-			var data={username: $(this).parent().parent().parent().attr('id')};
+			var userId=$(this).parent().parent().parent().attr('id');
 			var field=$(this).attr('rel');
+			var data={};
 			data[field]=$(this).prop('checked')?1:0;
-			websocket.emit('db-save','users',data,'username');
-			usersData[data.username][field]=data[field];
+			api('user/'+userId,'PUT',data);
+			//websocket.emit('db-save','users',data,'username');
+			usersData[userId][field]=data[field];
 		});
 		
 		$.usersInitiated=true;
-    }
+	}
 	
 	/*
 	 *remove confirmed
 	 */
 	$('#confirm-delete .btn-danger').click(function(e){
 		$('#confirm-delete').modal('hide');
-		websocket.emit('db-remove','users',$('#confirm-delete').attr('rel'));
-		listenForUsers();
+
+    api('user/'+$('#confirm-delete').attr('rel'),'DELETE',listenForUsers);
+
 	});
 
 	/*
 	 *save button in user edit
 	 */
 	$('#edit-user .btn-info').click(function(e){
-		
-		var data={username:$('#edit-user').attr('rel')};
 
+		var userId=$('#edit-user').attr('rel');
+
+    var data={};
 		$('#edit-user input,#edit-user select').each(function(){
 			if(typeof($(this).attr('name'))!='undefined') data[$(this).attr('name')]=$(this).val();
 		});
 		
 		if ($('#edit-user').hasClass('add-user')) {
-            websocket.emit('add-user',data);
-			websocket.once('add-user',function(data) {
-				$('#edit-user').modal('hide');
-				listenForUsers(true);
-			});
-        }
+
+
+      $('#edit-user').modal('hide');
+      api('user','POST',data,function(err){
+        listenForUsers(true);
+      });
+		}
 		
 		
 		if ($('#edit-user').hasClass('edit-user')) {
-			$('#edit-user').modal('hide');
-			if (data.password.trim().length==0) {
-                delete(data.password);
-            }
+			  $('#edit-user').modal('hide');
+
+				if (data.password.trim().length===0) {
+          delete(data.password);
+				}
+
+				api('user/'+userId,'PUT',data,function(err){
+          listenForUsers(true);
+        });
 			
-            websocket.emit('db-save','users',data,'username');
-			websocket.once('users',function(row) {
-				listenForUsers(true);
-			});
-        }
+
+
+
+		}
 		
 		
 	});
 
-	/*
-	 *upload new image icon clicked and user chose image
-	 */
-	$('#img-user').on('change',function(){
-		var d=$('#img-user').prop('files')[0];
-		if (typeof(d)!='undefined') {
-			var file_reader = new FileReader();
-			file_reader.readAsDataURL(d);
-			
-			file_reader.onload = function() {
-				websocket.emit('upload-file',$('#edit-control').attr('symbol'),file_reader.result);
-				
-			};
-		}
-	
-	
-	});
-	
-	
 	
 
 

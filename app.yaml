@@ -1,5 +1,4 @@
-runtime: nodejs8
-env: standard
+runtime: nodejs10
 env_variables:
   NODE_ENV: ae
 
