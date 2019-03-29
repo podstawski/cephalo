@@ -163,6 +163,8 @@ function setUpUrl(url) {
 
 function loadPage(url) {
 
+  $('#left-sidebar').html('');
+
 	var urla=url.split(',');
 
 	$.ajax({
