@@ -4,7 +4,7 @@
   "ssl_key": "piotr/privkey.pem",
   "ssl_ca": "piotr/fullchain.pem",
   "ssl_cert": "piotr/cert.pem",
-  "GOOGLE_OAUTH_CALLBACK": "http://piotr.webkameleon.com:3000/google.html",
+  "GOOGLE_OAUTH_CALLBACK": "https://piotr.webkameleon.com:3000/",
   "swagger": {
     "protocol": "https"
   }

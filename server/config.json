@@ -29,7 +29,7 @@
     }
   },
   "GOOGLE_OAUTH_SECRET": "./server/google-secret.json",
-  "GOOGLE_OAUTH_CALLBACK": "https://piotr.webkameleon.com:3000/google.html",
+  "GOOGLE_OAUTH_CALLBACK": "https://piotr.webkameleon.com:3000/",
   "GOOGLE_OAUTH_SCOPES": [
     "https://www.googleapis.com/auth/drive"
   ]

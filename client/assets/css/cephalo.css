@@ -924,3 +924,12 @@ div.wait {
     background-color: #1f2028;
     color: #fff;
 }
+
+.google img{
+    width: 100px;
+    display: none;
+}
+
+.google img.none{
+    filter: grayscale(100%);
+}
