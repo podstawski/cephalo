@@ -121,3 +121,46 @@ mediaQueryList.addListener(function(mql) {
     return false;
 });
 
+
+var pickerLoaded=false;
+function loadPicker () {
+  pickerLoaded=true;
+}
+
+var setDrivePicker = function(token,buttonSelector,viewType,mimeType,allowUpload,multiselectEnable,cb) {
+  gapi.load('picker', {
+    'callback': function () {
+      $(buttonSelector).css({cursor:'pointer'});
+
+      var view = new google.picker.DocsView(google.picker.ViewId[viewType]);
+      view.setMimeTypes(mimeType);
+
+      if (viewType.indexOf('FOLDER')!==-1) {
+        view.setIncludeFolders(true);
+        view.setSelectFolderEnabled(true);
+      }
+
+      //.enableFeature(google.picker.Feature.NAV_HIDDEN)
+
+
+      $(buttonSelector).click(function (e) {
+        var pB=new google.picker.PickerBuilder()
+          .addView(view)
+          .setAppId(token.appId)
+          .setOAuthToken(token.token.access_token)
+          .setCallback(cb)
+          .setLocale('pl');
+
+        if (allowUpload)
+          pB=pB.addView(new google.picker.DocsUploadView());
+
+        if (multiselectEnable)
+          pB=pB.enableFeature(google.picker.Feature.MULTISELECT_ENABLED);
+
+        pB.build().setVisible(true);
+
+      });
+    }
+  });
+
+}

@@ -927,7 +927,19 @@ div.wait {
 
 .google img{
     width: 100px;
+
+}
+
+.google .sync img {
     display: none;
+}
+
+.google .folder {
+    display: none;
+}
+
+.google .folder .name {
+    font-size: 2em;
 }
 
 .google img.none{

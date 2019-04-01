@@ -18,8 +18,14 @@
     "preview": {
       "type": "string"
     },
+    "thumb": {
+      "type": "string"
+    },
     "name": {
       "type": "string"
+    },
+    "uploadedAt": {
+      "type": "date"
     }
   },
   "scope": {

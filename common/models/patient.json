@@ -22,6 +22,9 @@
     },
     "lastName": {
       "type": "string"
+    },
+    "folderId": {
+      "type": "string"
     }
   },
   "validations": [],
