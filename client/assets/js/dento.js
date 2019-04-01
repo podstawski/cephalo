@@ -142,8 +142,7 @@ var setDrivePicker = function(token,buttonSelector,viewType,mimeType,allowUpload
 
       //.enableFeature(google.picker.Feature.NAV_HIDDEN)
 
-
-      $(buttonSelector).click(function (e) {
+      $(document).on('click',buttonSelector,function (e) {
         var pB=new google.picker.PickerBuilder()
           .addView(view)
           .setAppId(token.appId)

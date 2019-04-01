@@ -945,3 +945,7 @@ div.wait {
 .google img.none{
     filter: grayscale(100%);
 }
+
+.patientClick {
+    cursor: pointer;
+}
