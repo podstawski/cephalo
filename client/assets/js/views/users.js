@@ -152,6 +152,7 @@ $(function(){
 		$(document).on('click','.usertable td a.btn-danger',function(e){
 			var id=$(this).parent().parent().attr('id');
 			$('#confirm-delete').attr('rel',id);
+
 			$('#confirm-delete .modal-header h4').text(usersData[id].username);
 		});
 		

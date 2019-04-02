@@ -137,10 +137,13 @@ module.exports = function (Google) {
     if (!options.currentUser.googleToken)
       return cb(new Error('You have no token'));
 
-    //return options.local.oauth2Client.getAccessToken(function(err,tokens){
-      //cb(err, {token: tokens, appId: options.local.credentials.web.client_id});
+    /*
+    return options.local.oauth2Client.getRequestHeaders(function(auth){
 
-    //});
+      cb(null, {token: auth.Authorization.replace('Bearer ',''), appId: options.local.credentials.web.client_id});
+
+    });
+    */
     options.local.oauth2Client.refreshAccessToken(function (err, tokens) {
 
       cb(err, {token: tokens, appId: options.local.credentials.web.client_id});

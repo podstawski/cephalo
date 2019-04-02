@@ -6,7 +6,12 @@
   "mixins": {
     "AclMixin": true,
     "RemoteMixin": true,
-    "HooksMixin": true
+    "HooksMixin": true,
+    "CascadeDeleteMixin": {
+      "relations": [
+        "lines"
+      ]
+    }
   },
   "http": {
     "path": "rtg"

@@ -72,7 +72,7 @@ $(function() {
   patientId = parseInt(hash[1]);
   api('/patient/' + patientId, weHavePatient);
 
-  var filter=encodeURIComponent('{"where":{"patientId":'+patientId+'},"order":"uploadedAt desc"}');
+  var filter=encodeURIComponent('{"where":{"patientId":'+patientId+'},"order":"uploadedAt desc, id desc"}');
   api('/rtg?filter='+filter, drawGallery);
 
 
@@ -88,5 +88,30 @@ $(function() {
       });
     })
   });
+
+
+  $(document).on('click','.patient a.remove',function(e){
+    var id=$(this).attr('rel');
+    $('#confirm-delete').attr('rel',id);
+    $('#confirm-delete .modal-header h4').text($(this).attr('name'));
+  });
+
+  $(document).on('click','.patient a.repreview',function(e){
+    var id=$(this).attr('rel').split(',');
+
+    api('/rtg/'+id[0],'PUT',{driveId:id[1]},function(){
+      api('/rtg?filter='+filter, drawGallery);
+    });
+  });
+
+  $('#confirm-delete .btn-danger').click(function(e){
+    $('#confirm-delete').modal('hide');
+
+    api('rtg/'+$('#confirm-delete').attr('rel'),'DELETE',function(err){
+      api('/rtg?filter='+filter, drawGallery);
+    });
+
+  });
+
 
 });

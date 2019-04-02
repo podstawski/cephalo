@@ -11,7 +11,12 @@
         "users"
       ]
     },
-    "HooksMixin": true
+    "HooksMixin": true,
+    "CascadeDeleteMixin": {
+      "relations": [
+        "rtg"
+      ]
+    }
   },
   "http": {
     "path": "patient"
