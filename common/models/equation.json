@@ -11,6 +11,11 @@
       "properties": [
         "symbol"
       ]
+    },
+    "CascadeDeleteMixin": {
+      "relations": [
+        "lines"
+      ]
     }
   },
   "http": {
@@ -39,6 +44,10 @@
   },
   "validations": [],
   "relations": {
+    "lines": {
+      "type": "hasMany",
+      "model": "line"
+    }
 
   },
   "acls": [

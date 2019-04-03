@@ -158,7 +158,7 @@ $(function(){
 		$(document).on('click','.mathtable td a.btn-danger',function(e){
 			var id=$(this).parent().parent().attr('id');
 			$('#confirm-delete').attr('rel',id);
-			$('#confirm-delete .modal-header h4').text(mathsData[id].mathname);
+			$('#confirm-delete .modal-header h4').text(mathsData[id].symbol);
 		});
 		
 		/*

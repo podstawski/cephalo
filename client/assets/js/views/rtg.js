@@ -159,7 +159,7 @@ var moveElements = function() {
 
   $('#rtg-container .draggable-container .element').remove();
   for (var k in elements)
-    drawPolygon(elements[k].points,elements[k].id,elements[k].data,elements[k].color,false,k);
+    drawPolygon(elements[k].points,elements[k].id,elements[k].data,elements[k].color,false,k,elements[k].equetion);
 }
 
 var drawPolygonPoints = function() {
@@ -206,7 +206,7 @@ var calculateWH = function (autoheight) {
     moveElements();
 }
 
-var drawPolygon = function(points,id,data,color,isDrawing,symbol) {
+var drawPolygon = function(points,id,data,color,isDrawing,symbol,doNotRecalculate) {
     //console.log('drawPolygon',points,id,data,color,isDrawing,symbol);
     var name;
 
@@ -224,23 +224,33 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol) {
     for (var i=0; i<points.length; i++) points2.push(calculatePoint(points[i]));
 
     var minx=0,miny=0,maxx=0,maxy=0;
-
+    var r=5;
     
     for (var i=0; i<points2.length; i++) {
-        
+
+        /*
         //align to lines:
         for (var j=0; j<i; j++) {
             if (Math.abs(points2[i].x-points2[j].x)<10) points2[i].x=points2[j].x;
             if (Math.abs(points2[i].y-points2[j].y)<10) points2[i].y=points2[j].y;
         }
+        */
         //calculate bounds:
-        if (points2[i].x<minx || minx===0) minx=points2[i].x;
-        if (points2[i].y<miny || miny===0) miny=points2[i].y;
-        if (points2[i].x>maxx ) maxx=points2[i].x;
-        if (points2[i].y>maxy ) maxy=points2[i].y;
-              
+
+      if (points2[i].x<minx || minx===0) minx=points2[i].x;
+      if (points2[i].y<miny || miny===0) miny=points2[i].y;
+      if (points2[i].x>maxx ) maxx=points2[i].x;
+      if (points2[i].y>maxy ) maxy=points2[i].y;
     }
-    
+
+    if (points2.length===1) { //circle
+      minx=points2[0].x-r;
+      miny=points2[0].y-r;
+      maxx=points2[0].x+r;
+      maxy=points2[0].y+r;
+    }
+
+
     for (var i=0; i<points2.length; i++) {
         p+=Math.round(points2[i].x - minx) + ',' + Math.round(points2[i].y - miny) + ' ';
     }
@@ -248,8 +258,12 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol) {
     var polygon;
 
     var style=[];
-    if (color)
-        style.push('stroke:'+color);
+    if (color) {
+      if (points2.length===1)
+        style.push('fill:' + color);
+      else
+        style.push('stroke:' + color);
+    }
 
     if (style.length>0)
         style=' style="'+style.join(';')+'"';
@@ -260,12 +274,16 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol) {
     var cl = isDrawing ? ' drawing':'';
     if (symbol)
         cl+=' type-'+symbol;
+
+    if (doNotRecalculate)
+      cl+=' equation';
+
     if (points2.length>2) {
         polygon='<div class="polygon'+cl+' element"><div>'+name+'</div><svg><polygon'+style+' points="'+p.trim()+'"/></svg></div>';
     } else if (points2.length===2) {
         polygon='<div class="line'+cl+' element"><svg><line'+style+' x1="'+Math.round(points2[0].x - minx)+'" y1="'+Math.round(points2[0].y - miny)+'" x2="'+Math.round(points2[1].x - minx)+'" y2="'+Math.round(points2[1].y - miny)+'"/></svg></div>';
     } else {
-        return;
+      polygon='<div class="circle'+cl+' element"><svg><circle'+style+' cx="'+Math.round(points2[0].x - minx)+'" cy="'+Math.round(points2[0].y - miny)+'" r="'+r+'"/></svg></div>';
     }
 
     if (id)
@@ -291,12 +309,14 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol) {
       id:id,
       name:name,
       color:color,
+      equetion: doNotRecalculate,
       data:data
     };
 
-    equation[symbol] = new Equation(points,null,color);
-    console.log(elements);
-    recalculateEquation();
+    if (!doNotRecalculate) {
+      equation[symbol] = new Equation(points, null, color);
+      recalculateEquation();
+    }
     return poli;
 }
 
@@ -304,7 +324,10 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol) {
 var recalculateEquation = function (tick) {
   if (!tick)
     tick=0;
-  console.log(tick,equation);
+  //console.log(tick,equation);
+
+  if (tick===0)
+    $('#rtg-container .draggable-container .equation').remove();
 
   var html='';
 
@@ -323,11 +346,22 @@ var recalculateEquation = function (tick) {
     var str='var v='+e+';'
     try {
       eval(str);
-      equation[k].set(v);
-      var color=equation[k].getColor() || '#fff';
 
-      html+='<li style="color:'+color+'">'+k+' = '+v+'</li>';
 
+      if (v instanceof Line) {
+        console.log(k,'line');
+        drawPolygon(v.points,k,null,equation[k].color,false,k,true);
+        equation[k].points = v.points;
+
+      } else {
+
+        if (v) {
+          equation[k].set(v);
+          var color = equation[k].getColor() || '#fff';
+
+          html += '<li style="color:' + color + '">' + k + ' = ' + v + '</li>';
+        }
+      }
     } catch (err) {
       console.log(str,err);
     }
@@ -513,8 +547,10 @@ var drawAsideDevices = function() {
 
         var html;
         var style='stroke-width:1; stroke:'+color;
-        if (pointCount===1)
-            html='<img src="assets/img/dot.png" class="polygon-dot"/>';
+        if (pointCount===1) {
+          style="fill:"+color;
+          html = '<div class="circle" style="height:30px"><svg><circle style="'+style+'" cx="15" cy="11" r="10"/></svg></div>';
+        }
         if (pointCount===2)
             html='<div class="line" style="height:30px"><svg><line style="'+style+'" x1="1" y1="10" x2="30" y2="1"/></svg></div>';
         if (pointCount>2)
