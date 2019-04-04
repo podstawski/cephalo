@@ -326,8 +326,8 @@ var recalculateEquation = function (tick) {
     tick=0;
   //console.log(tick,equation);
 
-  if (tick===0)
-    $('#rtg-container .draggable-container .equation').remove();
+  //if (tick===0)
+  //  $('#rtg-container .draggable-container .equation').remove();
 
   var html='';
 
@@ -349,10 +349,8 @@ var recalculateEquation = function (tick) {
 
 
       if (v instanceof Line) {
-        console.log(k,'line');
         drawPolygon(v.points,k,null,equation[k].color,false,k,true);
         equation[k].points = v.points;
-
       } else {
 
         if (v) {
@@ -368,6 +366,10 @@ var recalculateEquation = function (tick) {
   }
 
   $('#left-sidebar').html(html);
+
+  if (tick===0)
+    recalculateEquation(tick+1);
+
 }
 
 
@@ -449,12 +451,14 @@ var rtgDraw=function(err,data) {
 
     $('.breadcrumb .breadcrumb-menu .btn-rtg').show();
 
-    
-    $('#rtg-container img.svg').attr('src',data.preview).load(function(){
+    var loadImg = function(){
+      $('#rtg-container img.svg').attr('src',data.preview).load(function(){
         originalSvgWidth=$(this).width();
         calculateWH();
-        //websocket.emit('db-select','rtg',[{rtg:thisrtg}]);
-    });
+      }).error(loadImg);
+
+    };
+    loadImg();
     
     
     $('#rtg-container .rtg-polygon-dashboard').click(function(e){
@@ -623,8 +627,8 @@ $(function(){
     thisrtg=parseInt(hash[1]);
     api('/rtg/'+thisrtg,rtgDraw);
 
-    //var filter=encodeURIComponent('{"where":{"equation":null}}')
-    api('/equation',buildAsideMenu);
+    var filter=encodeURIComponent('{"order":"symbol"}');
+    api('/equation?filter='+filter,buildAsideMenu);
 
     
     busRequested=false;

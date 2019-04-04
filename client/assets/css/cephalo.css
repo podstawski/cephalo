@@ -972,3 +972,7 @@ div.wait {
 .patientClick {
     cursor: pointer;
 }
+
+.sp-picker-container .sp-button-container {
+    display: none;
+}

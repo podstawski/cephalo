@@ -26,7 +26,7 @@ module.exports = function (Rtg) {
           drive.files.get({
             auth: Rtg.oauth2Client(ctx.options),
             fileId: data.driveId,
-            fields: 'thumbnailLink,createdTime,parents,name'
+            fields: 'createdTime,parents,name'
           }, function (err, file) {
             if (err)
               return next(err);
@@ -34,10 +34,10 @@ module.exports = function (Rtg) {
 
             //const thumb = file.data.thumbnailLink.split('.');
             //data.preview = thumb[0]+'.google.com/u/0/d/'+data.driveId;
-            data.preview = file.data.thumbnailLink.split('=')[0];
+            data.preview = 'https://drive.google.com/thumbnail?id='+data.driveId+'&sz=s3000';
             data.name = file.data.name;
             data.uploadedAt = file.data.createdTime;
-            data.thumb=file.data.thumbnailLink;
+            data.thumb='https://drive.google.com/thumbnail?id='+data.driveId+'&sz=s220';
 
             if (!destinationFolder || file.data.parents.indexOf(destinationFolder)!==-1)
               return next();

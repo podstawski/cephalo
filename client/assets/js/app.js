@@ -164,6 +164,7 @@ function setUpUrl(url) {
 function loadPage(url) {
 
   $('#left-sidebar').html('');
+  $('.sp-container').remove();
 
 	var urla=url.split(',');
 

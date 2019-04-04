@@ -24,9 +24,8 @@ const api = function (url, method, data, cb) {
         method=method.substr(0,method.indexOf('+WAIT'));
     }
 
-    url='/api/'+url;
     var settings = {
-        url: url,
+        url: '/api/'+url,
         data: clone(data),
         method: method,
         xhrFields: {
@@ -38,7 +37,7 @@ const api = function (url, method, data, cb) {
     }
 
     var token=window.localStorage.getItem('swagger_accessToken');
-    if (token)
+    if (token && url!=='user/login')
         settings.headers.authorization = 'Bearer '+token;
 
     Pace.restart();
@@ -57,7 +56,8 @@ const api = function (url, method, data, cb) {
             progressBar: true,
         });
         if (e.code ==='INVALID_TOKEN' || e.code==='AUTHORIZATION_REQUIRED') {
-            window.localStorage.setItem('location_hash',window.location.hash.substr(1));
+            if (window.location.hash!='#main.html')
+                window.localStorage.setItem('location_hash',window.location.hash.substr(1));
             logout();
         }
         cb(e);
