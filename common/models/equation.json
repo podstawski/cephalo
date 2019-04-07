@@ -40,6 +40,26 @@
     },
     "pointCount": {
       "type": "number"
+    },
+    "minValue": {
+      "type": "number",
+      "dataType": "decimal",
+      "precision": 12,
+      "scale": 2
+    },
+    "maxValue": {
+      "type": "number",
+      "dataType": "decimal",
+      "precision": 12,
+      "scale": 2
+    },
+    "below": {
+      "type": "string",
+      "dataType": "text"
+    },
+    "above": {
+      "type": "string",
+      "dataType": "text"
     }
   },
   "validations": [],

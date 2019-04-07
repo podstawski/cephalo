@@ -1,6 +1,8 @@
-var Angle = function(p) {
+var Angle = function(p,fullData) {
 
-  if (!Array.isArray(p) || p.length<=1 || p.length>3) {
+  this.full = fullData;
+
+  if (!Array.isArray(p) || p.length<=1 || p.length>3 || yFactor===0) {
     this.value=0;
     return;
   }
@@ -24,7 +26,7 @@ var Angle = function(p) {
     if (p[0].x === p[1].x) {
       this.value=90;
     } else {
-      var tg=Math.abs(p[0].y-p[1].y)/Math.abs(p[0].x-p[1].x);
+      var tg=yFactor*Math.abs(p[0].y-p[1].y)/Math.abs(p[0].x-p[1].x);
       this.value=180*Math.atan(tg)/Math.PI;
     }
     if (quarter===3 || quarter===1)
@@ -32,7 +34,6 @@ var Angle = function(p) {
 
     this.value+=90*quarter;
 
-    //console.log(p,quarter,this.value)
 
   }
 
@@ -41,15 +42,29 @@ var Angle = function(p) {
 }
 
 Angle.prototype.toString = function() {
-  return (Math.round(this.value*10)/10)+'°';
+  var title='OK';
+  var post='';
+  if (this.full.maxValue && this.value>this.full.maxValue) {
+    title = this.full.above;
+    post=' <span color="red">↗</span>';
+  }
+  if (this.full.minValue && this.value<this.full.minValue) {
+    title = this.full.below;
+    post=' <span color="red">↘</span>';
+  }
+
+  return '<span title="'+title+'">'+(Math.round(this.value*10)/10)+'°</span>'+post;
 }
 
 Angle.prototype.getValue = function() {
   return this.value;
 }
 
-Angle.prototype.subtract = function(a) {
+Angle.prototype.subtract = function(a,reflect) {
   this.value-= a.getValue();
+  if (reflect) {
+    this.value = reflect - Math.abs(this.value);
+  }
   return this;
 }
 
@@ -57,12 +72,61 @@ var Line = function (p1,p2) {
   this.points = [p1,p2];
 }
 
+var MM = function(len) {
+  this.len=len;
+}
 
-var Equation = function(points,equation,color) {
+Line.prototype.lenFromPoint = function(P,cmLine) {
+  var p=P.getPoints()[0];
+  var A = this.points[1].x - this.points[0].x,
+    B = this.points[1].y - this.points[0].y,
+    p3;
+  var u = (A*(p.x-this.points[0].x)+B*(p.y-this.points[0].y))/(Math.pow(A,2)+Math.pow(B,2));
+
+  if (u<=0) {
+    p3 = p1;
+  }
+  else if (u>=1) {
+    p3 = p2;
+  }
+  else {
+    p3 = {
+      x: parseFloat(this.points[0].x) + u * A,
+      y: parseFloat(this.points[0].y) + u * B
+    };
+  }
+  var len=Math.sqrt(Math.pow(p.x-p3.x,2)+Math.pow(p.y-p3.y,2));
+
+  if (cmLine && cmLine.getPoints && cmLine.getPoints().length===2) {
+    var cmP=cmLine.getPoints();
+    var cmLineLen = Math.sqrt(Math.pow(cmP[0].x-cmP[1].x,2)+Math.pow(cmP[0].y-cmP[1].y,2));
+    len = 10* (len/cmLineLen);
+  }
+
+  return new MM(len);
+}
+
+Line.prototype.len = function() {
+  var len =  Math.sqrt(Math.pow(this.points[0].x-this.points[1].x,2)+Math.pow(this.points[0].y-this.points[1].y,2));
+  return len;
+}
+
+
+MM.prototype.toString = function () {
+  return (Math.round(this.len*10)/10) + 'mm';
+}
+
+MM.prototype.valueOf = function () {
+  return this.len;
+}
+
+var Equation = function(points,equation,color,full) {
     this.equation=equation;
     this.points=points;
     this.value=null;
     this.color=color;
+    if (full)
+      this.full = full;
 }
 
 
@@ -75,16 +139,22 @@ Equation.prototype.getPoints = function() {
   return this.points;
 };
 
-Equation.prototype.angle = function(p) {
+Equation.prototype.setYFactor = function(yFactor) {
+  if (yFactor)
+    this.yFactor = yFactor;
+  return this.yFactor;
+}
+
+Equation.prototype.angle = function(p,reflect) {
 
   //console.log(p);
-  var a=new Angle(this.points);
+  var a=new Angle(this.points, this.full);
   if (typeof(p)==='undefined')
     return a;
   if (p==null || !p.getPoints || !p.getPoints())
     return null;
 
-  return a.subtract(new Angle(p.getPoints()));
+  return a.subtract(new Angle(p.getPoints(),this.full),reflect);
 };
 
 Equation.prototype.get = function() {
@@ -103,3 +173,4 @@ Equation.prototype.getColor = function() {
 Equation.prototype.line = function(e) {
   return new Line(this.points[0],e.getPoints()[0]);
 };
+

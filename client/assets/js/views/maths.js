@@ -222,7 +222,7 @@ $(function(){
 		var mathId=$('#edit-math').attr('rel');
 
     var data={};
-		$('#edit-math input,#edit-math select').each(function(){
+		$('#edit-math input,#edit-math select,#edit-math textarea').each(function(){
 			if(typeof($(this).attr('name'))!='undefined' && $(this).val().length>0)
 				data[$(this).attr('name')]=$(this).val();
 		});

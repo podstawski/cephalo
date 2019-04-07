@@ -100,6 +100,7 @@ $(function() {
     var id=$(this).attr('rel').split(',');
 
     api('/rtg/'+id[0],'PUT',{driveId:id[1]},function(){
+      filter=encodeURIComponent('{"where":{"patientId":'+id[2]+'},"order":"uploadedAt desc, id desc"}');
       api('/rtg?filter='+filter, drawGallery);
     });
   });

@@ -25,6 +25,7 @@ var currentPolygonColor='';
 var currentPolygonTypeId='';
 var currentPolygonSymbol='';
 var equation={};
+var yFactor=0;
 
 
 
@@ -224,7 +225,7 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol,doNotRecalculat
     for (var i=0; i<points.length; i++) points2.push(calculatePoint(points[i]));
 
     var minx=0,miny=0,maxx=0,maxy=0;
-    var r=5;
+    var r=3;
     
     for (var i=0; i<points2.length; i++) {
 
@@ -299,7 +300,7 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol,doNotRecalculat
     
  
     poli.attr('id',id);
-    poli.attr('title',name);
+    poli.attr('title',symbol+': '+name);
     
     if (!symbol || isDrawing) return poli;
 
@@ -330,9 +331,12 @@ var recalculateEquation = function (tick) {
   //  $('#rtg-container .draggable-container .equation').remove();
 
   var html='';
+  var lastFirstLetter='';
 
 
   for (var k in equation) {
+    equation[k].setYFactor(yFactor);
+
     var e=equation[k].getEquation();
     if (!e)
       continue;
@@ -357,7 +361,11 @@ var recalculateEquation = function (tick) {
           equation[k].set(v);
           var color = equation[k].getColor() || '#fff';
 
-          html += '<li style="color:' + color + '">' + k + ' = ' + v + '</li>';
+
+          if (lastFirstLetter.length>0 && lastFirstLetter!==k.substr(0,1))
+            html+='<p></p>';
+          html += '<li style="color:' + color + '">' + k + ' = ' + v.toString() + '</li>';
+          lastFirstLetter=k.substr(0,1);
         }
       }
     } catch (err) {
@@ -453,6 +461,10 @@ var rtgDraw=function(err,data) {
 
     var loadImg = function(){
       $('#rtg-container img.svg').attr('src',data.preview).load(function(){
+        if ($(this).width()>0)
+          yFactor = $(this).height() / $(this).width();
+
+
         originalSvgWidth=$(this).width();
         calculateWH();
       }).error(loadImg);
@@ -582,7 +594,7 @@ var buildAsideMenu = function(err,data) {
 
   for (var i=0;i<data.length; i++) {
     if (data[i].equation && data[i].equation.length && data[i].equation.trim().length>0) {
-      equation[data[i].symbol] = new Equation(null,data[i].equation,data[i].color);
+      equation[data[i].symbol] = new Equation(null,data[i].equation,data[i].color,data[i]);
       data.splice(i--,1);
       continue;
     }
@@ -630,7 +642,7 @@ $(function(){
     var filter=encodeURIComponent('{"order":"symbol"}');
     api('/equation?filter='+filter,buildAsideMenu);
 
-    
+
     busRequested=false;
     
 
