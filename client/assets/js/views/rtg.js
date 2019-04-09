@@ -213,6 +213,8 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol,doNotRecalculat
 
     if (typeof data==='string')
       name=data;
+    else if (data && data.name)
+      name=data.name;
     else if (data && data.equation)
       name=data.equation.name||'';
     else if (symbol)
@@ -335,32 +337,36 @@ var recalculateEquation = function (tick) {
 
 
   for (var k in equation) {
+    var self=equation[k];
     equation[k].setYFactor(yFactor);
 
     var e=equation[k].getEquation();
     if (!e)
       continue;
 
-    for (var kk in equation)
-      e=e.replace('{'+kk+'}','equation.'+kk);
+    for (var kk in equation) {
+      var re=new RegExp('\{'+kk+'\}','g');
+      e = e.replace(re, 'equation.' + kk);
+    }
 
-    if (e.indexOf('{')!==-1)
+    if (e.indexOf('{')!==-1) {
+      //console.log('Can not evalueate:',e);
       continue;
+    }
 
     var str='var v='+e+';'
     try {
       eval(str);
-
-
-      if (v instanceof Line) {
-        drawPolygon(v.points,k,null,equation[k].color,false,k,true);
+      //console.log(k,v);
+      if (v instanceof Line || v instanceof Equation) {
+        drawPolygon(v.points,k,self.full,equation[k].color,false,k,true);
         equation[k].points = v.points;
       } else {
 
         if (v) {
           equation[k].set(v);
           var color = equation[k].getColor() || '#fff';
-
+          color='#fff';
 
           if (lastFirstLetter.length>0 && lastFirstLetter!==k.substr(0,1))
             html+='<p></p>';
@@ -374,6 +380,7 @@ var recalculateEquation = function (tick) {
   }
 
   $('#left-sidebar').html(html);
+  $('#rtg-container .draggable-container .rtg-legend-container .rtg-legend-contents').html(html);
 
   if (tick===0)
     recalculateEquation(tick+1);
@@ -455,7 +462,7 @@ var rtgDraw=function(err,data) {
     document.title=description+': '+data.name;
 
     setBreadcrumbs([{name: description, href:'patient.html,'+data.patient.id},
-        {name: data.name, href:'rtg.html,'+data.id}]);
+        {name: data.name+' ('+data.uploadedAt.toString().substr(0,10)+')', href:'rtg.html,'+data.id}]);
 
     $('.breadcrumb .breadcrumb-menu .btn-rtg').show();
 
@@ -626,6 +633,24 @@ var buildAsideMenu = function(err,data) {
   });
 
 }
+
+var printRtg = function (start) {
+  zoomContainer(1,1);
+  $('.draggable-container').css({left:0, top:0});
+  calculateWH(start);
+
+  if (start) {
+    $('.breadcrumb-home').hide();
+    $('#rtg-container img.svg').addClass('invert');
+    //$('#rtg-container .draggable-container .rtg-legend-container ').show();
+  }
+  else {
+    $('.breadcrumb-home').show();
+    $('#rtg-container img.svg').removeClass('invert');
+    //$('#rtg-container .draggable-container .rtg-legend-container ').hide();
+  }
+}
+
 
 
 $(function(){

@@ -131,37 +131,30 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     height: 100%;    
 }
 
-#rtg-container .draggable-container .rtg-debug-container {
+#rtg-container .draggable-container .rtg-legend-container {
     position: absolute;
     top: 10px;
     left: 10px;
-    width: 200px;
-    height: 150px;
+    width: 180px;
+    height: 400px;
     border: 1px red solid;
-    background-color: rgba(255,0,0,0.1);
+    background-color: rgba(0,0,0,0.5);
     z-index: 30;
     padding: 2px;
+    display: none;
 }
 
-#rtg-container .draggable-container .rtg-debug-container a {
-    right: 2px;
-    position: absolute;
-    top: -5px;
-    color: red;
-}
 
-#rtg-container .draggable-container .rtg-debug-container a:hover {
-    text-decoration: none;
-}
-
-#rtg-container .draggable-container .rtg-debug-container .rtg-debug-contents {
+#rtg-container .draggable-container .rtg-legend-container .rtg-legend-contents {
     height: 100%;
     overflow: auto;
-    font-size: 8px;
+    font-size: 10px;
     font-family: Courier;
+    list-style-type: none;
+    padding:5px;
 }
 
-#rtg-container .draggable-container .rtg-debug-container .rtg-debug-contents p {
+#rtg-container .draggable-container .rtg-legend-container .rtg-legend-contents li {
     margin: 0;
 }
 
@@ -879,9 +872,18 @@ iframe {
     .page-header {
         display: none;
     }
-    
-    #rtg-container .draggable-container .rtg-debug-container {
-        display: none;
+    #rtg-container .draggable-container .rtg-legend-container {
+        display: block;
+    }
+
+    #rtg-container {
+        width: 100%;
+    }
+
+    .draggable-container.ui-draggable.ui-draggable-handle {
+        zoom: 0 !important;
+        left: 0 !important;
+        top: 0 !important;
     }
 }
 
@@ -919,17 +921,6 @@ iframe {
     }
 }
 
-@media print {
-    #rtg-container {
-        width: 100%;
-    }
-
-    .draggable-container.ui-draggable.ui-draggable-handle {
-        zoom: 0 !important;
-        left: 0 !important;
-        top: 0 !important;
-    }
-}
 
 
 div.wait {
@@ -975,4 +966,8 @@ div.wait {
 
 .sp-picker-container .sp-button-container {
     display: none;
+}
+
+.invert {
+    filter: invert(100%);
 }

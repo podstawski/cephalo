@@ -110,12 +110,12 @@ mediaQueryList.addListener(function(mql) {
     
     if (mql.matches) {
         $('body').removeClass('sidebar-nav');
-        if (typeof(printFloor)==='function') printFloor(true);
+        if (typeof(printRtg)==='function') printRtg(true);
         
     } else {
         $('.breadcrumb').show();
         $('body').addClass('sidebar-nav');
-        if (typeof(printFloor)==='function') printFloor(false);
+        if (typeof(printRtg)==='function') printRtg(false);
     }
     
     return false;

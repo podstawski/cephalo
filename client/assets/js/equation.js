@@ -76,7 +76,7 @@ var MM = function(len) {
   this.len=len;
 }
 
-Line.prototype.lenFromPoint = function(P,cmLine) {
+Line.prototype.projection = function(P) {
   var p=P.getPoints()[0];
   var A = this.points[1].x - this.points[0].x,
     B = this.points[1].y - this.points[0].y,
@@ -95,20 +95,28 @@ Line.prototype.lenFromPoint = function(P,cmLine) {
       y: parseFloat(this.points[0].y) + u * B
     };
   }
-  var len=Math.sqrt(Math.pow(p.x-p3.x,2)+Math.pow(p.y-p3.y,2));
+
+  return new Equation([p3],null,P.getColor());
+}
+
+Line.prototype.lenFromPoint = function(P,cmLine) {
+  return this.projection(P).line(P).len(cmLine);
+  return P.line(this.projection(P)).len(cmLine);
+}
+
+Line.prototype.len = function(cmLine) {
+  var len =  Math.sqrt(Math.pow(this.points[0].x-this.points[1].x,2)+Math.pow(this.points[0].y-this.points[1].y,2));
 
   if (cmLine && cmLine.getPoints && cmLine.getPoints().length===2) {
     var cmP=cmLine.getPoints();
     var cmLineLen = Math.sqrt(Math.pow(cmP[0].x-cmP[1].x,2)+Math.pow(cmP[0].y-cmP[1].y,2));
-    len = 10* (len/cmLineLen);
+    len = 10 * (len/cmLineLen);
   }
 
-  return new MM(len);
-}
+  if (this.points[0].x > this.points[1].x)
+    len*=-1;
 
-Line.prototype.len = function() {
-  var len =  Math.sqrt(Math.pow(this.points[0].x-this.points[1].x,2)+Math.pow(this.points[0].y-this.points[1].y,2));
-  return len;
+  return new MM(len);
 }
 
 
@@ -171,6 +179,32 @@ Equation.prototype.getColor = function() {
 };
 
 Equation.prototype.line = function(e) {
+  if (!e && this.points.length!=2)
+    return null;
+  if (!e)
+    return new Line(this.points[0],this.points[1]);
   return new Line(this.points[0],e.getPoints()[0]);
 };
+
+
+var Value = function(v,r,post) {
+  this.value = v;
+  this.round = r;
+  this.post = post;
+}
+
+Value.prototype.valueOf = function () {
+  return this.value;
+}
+
+Value.prototype.toString = function () {
+  var v=this.value;
+  if (this.round!==null) {
+    if (this.round===0)
+      v = Math.round(v);
+    else
+      v= Math.round(10*this.round*v)/(10*this.round);
+  }
+  return v+this.post;
+}
 
