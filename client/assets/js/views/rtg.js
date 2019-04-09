@@ -671,8 +671,8 @@ $(function(){
   if (hash.length===1 || isNaN(parseInt(hash[1])))
       return;
 
-  api('/google/token',function(err,google) {
-    loadDrive(google, function () {
+  loadToken(function(token){
+    loadDrive(token, function () {
 
       thisrtg=parseInt(hash[1]);
       api('/rtg/'+thisrtg,rtgDraw);
@@ -683,11 +683,6 @@ $(function(){
     });
   });
 
-
-
-
-
-    
     
     if (typeof($.breadcrumbIconClick)==='undefined') {
         $.breadcrumbIconClick=true;

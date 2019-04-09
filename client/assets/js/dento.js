@@ -127,7 +127,12 @@ function loadApi () {
   pickerLoaded=true;
 }
 
+var driveLoaded=false;
+
 var loadDrive=function(token,cb) {
+
+  if (driveLoaded)
+    return cb();
 
   gapi.load('client', function () {
     gapi.client.init({
@@ -136,11 +141,23 @@ var loadDrive=function(token,cb) {
     }).then(function(){
       gapi.client.setToken(token.token);
       gapi.client.load('drive','v3',cb);
+      driveLoaded=true;
     });
 
   });
 }
 
+var googleToken = null;
+
+var loadToken=function(cb) {
+  if (googleToken)
+    return cb(googleToken);
+  api('/google/token',function(err,google) {
+    if (!err)
+      googleToken=google;
+    cb(googleToken);
+  });
+}
 
 
 var setDrivePicker = function(token,buttonSelector,viewType,mimeType,allowUpload,multiselectEnable,cb) {
