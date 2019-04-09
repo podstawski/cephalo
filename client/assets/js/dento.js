@@ -123,9 +123,25 @@ mediaQueryList.addListener(function(mql) {
 
 
 var pickerLoaded=false;
-function loadPicker () {
+function loadApi () {
   pickerLoaded=true;
 }
+
+var loadDrive=function(token,cb) {
+
+  gapi.load('client', function () {
+    gapi.client.init({
+      clientId:token.appId,
+      scope: 'https://www.googleapis.com/auth/drive'
+    }).then(function(){
+      gapi.client.setToken(token.token);
+      gapi.client.load('drive','v3',cb);
+    });
+
+  });
+}
+
+
 
 var setDrivePicker = function(token,buttonSelector,viewType,mimeType,allowUpload,multiselectEnable,cb) {
   gapi.load('picker', {
@@ -160,6 +176,58 @@ var setDrivePicker = function(token,buttonSelector,viewType,mimeType,allowUpload
 
       });
     }
+  });
+
+}
+
+
+var getDriveFile = function(rtg,cb) {
+  var token='rtg';
+  var data = sessionStorage.getItem(token);
+  if (data)
+    data=JSON.parse(data);
+  if (data && data.id===rtg.driveId) {
+    console.log('file from storage',rtg.driveId);
+    return cb && cb(data.blob);
+  }
+
+  if (!gapi || !gapi.client || !gapi.client.drive)
+    return cb&&cb();
+
+  console.log('waiting for file from google drive',rtg.driveId);
+
+  gapi.client.drive.files.get({fileId: rtg.driveId, alt: 'media'}).then(function (file) {
+    if (!file.body || file.body.length < 50000)
+      return cb&&cb();
+
+    data = btoa(file.body);
+    sessionStorage.setItem(token, JSON.stringify({id: rtg.driveId, blob: data}));
+    cb && cb(data);
+  }, function(err){
+    cb&&cb();
+  });
+
+}
+
+
+function loadRtgImage(rtg,imgSelector,cb, counter) {
+
+  if (!counter)
+    counter=0;
+
+  getDriveFile(rtg,function(data){
+
+    if (data) {
+      $(imgSelector).attr('src','data:image/jpeg;base64,'+data).load(cb);
+      return;
+    }
+    if (counter<1)
+      return loadRtgImage(rtg,imgSelector,cb, counter+1);
+
+    var load = function() {
+      $(imgSelector).attr('src',rtg.preview).load(cb).error(load);
+    }
+    load();
   });
 
 }

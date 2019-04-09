@@ -133,10 +133,10 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
 
 #rtg-container .draggable-container .rtg-legend-container {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 180px;
-    height: 400px;
+    top: 20px;
+    left: 20px;
+    width: 120px;
+    height: 350px;
     border: 1px red solid;
     background-color: rgba(0,0,0,0.5);
     z-index: 30;
@@ -466,9 +466,9 @@ aside hr {
     margin-bottom: 5px;
 }
 aside .device-element {
-    width: 35px;
-    height: 35px;
-    padding-top: 15px;
+    width: 25px;
+    height: 25px;
+    padding-top: 5px;
     cursor: pointer;
 }
 
@@ -489,6 +489,24 @@ aside .remove {
 aside .device-container {
     cursor: move;
 }
+
+aside div {
+    font-size: 11px;
+}
+
+aside .m-r-1 {
+    margin-right:4px !important;
+}
+
+aside .ok {
+    margin-top: 6px;
+    width: 10px;
+}
+
+aside .ok  span{
+    display: none;
+}
+
 
 .editmode .device-container {
     cursor: move;
@@ -884,6 +902,10 @@ iframe {
         zoom: 0 !important;
         left: 0 !important;
         top: 0 !important;
+    }
+
+    aside {
+        display: none;
     }
 }
 

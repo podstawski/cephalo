@@ -18,7 +18,6 @@ var editmode=true;
 var deviceRatio=5;
 var minDeviceRatio=3;
 var maxDeviceRatio=10;
-var busRequested=false;
 var ctrlOn=false;
 var maxPointCount=0;
 var currentPolygonColor='';
@@ -306,6 +305,8 @@ var drawPolygon = function(points,id,data,color,isDrawing,symbol,doNotRecalculat
     
     if (!symbol || isDrawing) return poli;
 
+    $('aside .symbol-'+symbol).fadeIn();
+
     elements[symbol]={
       element:poli,
       points: points,
@@ -370,7 +371,11 @@ var recalculateEquation = function (tick) {
 
           if (lastFirstLetter.length>0 && lastFirstLetter!==k.substr(0,1))
             html+='<p></p>';
-          html += '<li style="color:' + color + '">' + k + ' = ' + v.toString() + '</li>';
+          var label=k;
+
+          if (label.match(/^[0-9][0-9]\./))
+            label=label.substr(3);
+          html += '<li style="color:' + color + '">' + label + ' = ' + v.toString() + '</li>';
           lastFirstLetter=k.substr(0,1);
         }
       }
@@ -382,7 +387,7 @@ var recalculateEquation = function (tick) {
   $('#left-sidebar').html(html);
   $('#rtg-container .draggable-container .rtg-legend-container .rtg-legend-contents').html(html);
 
-  if (tick===0)
+  if (tick<=1)
     recalculateEquation(tick+1);
 
 }
@@ -477,8 +482,14 @@ var rtgDraw=function(err,data) {
       }).error(loadImg);
 
     };
-    loadImg();
-    
+    //loadImg();
+
+    loadRtgImage(data,'#rtg-container img.svg',function(){
+      if ($(this).width()>0)
+        yFactor = $(this).height() / $(this).width();
+      originalSvgWidth=$(this).width();
+      calculateWH();
+    });
     
     $('#rtg-container .rtg-polygon-dashboard').click(function(e){
         
@@ -572,10 +583,10 @@ var drawAsideDevices = function() {
         var style='stroke-width:1; stroke:'+color;
         if (pointCount===1) {
           style="fill:"+color;
-          html = '<div class="circle" style="height:30px"><svg><circle style="'+style+'" cx="15" cy="11" r="10"/></svg></div>';
+          html = '<div class="circle" style="height:25px"><svg><circle style="'+style+'" cx="15" cy="11" r="10"/></svg></div>';
         }
         if (pointCount===2)
-            html='<div class="line" style="height:30px"><svg><line style="'+style+'" x1="1" y1="10" x2="30" y2="1"/></svg></div>';
+            html='<div class="line" style="height:25px"><svg><line style="'+style+'" x1="1" y1="10" x2="30" y2="1"/></svg></div>';
         if (pointCount>2)
             html='<div class="polygon"></div><svg><polygon style="'+style+'; fill: none" points="30,1 1,8 30,16"/></svg></div>';
 
@@ -655,21 +666,26 @@ var printRtg = function (start) {
 
 $(function(){
 
-    var hash=window.location.hash;
-    hash=hash.split(',');
-    if (hash.length===1 || isNaN(parseInt(hash[1])))
-        return;
+  var hash=window.location.hash;
+  hash=hash.split(',');
+  if (hash.length===1 || isNaN(parseInt(hash[1])))
+      return;
+
+  api('/google/token',function(err,google) {
+    loadDrive(google, function () {
+
+      thisrtg=parseInt(hash[1]);
+      api('/rtg/'+thisrtg,rtgDraw);
+
+      var filter=encodeURIComponent('{"order":"symbol"}');
+      api('/equation?filter='+filter,buildAsideMenu);
+
+    });
+  });
 
 
-    thisrtg=parseInt(hash[1]);
-    api('/rtg/'+thisrtg,rtgDraw);
-
-    var filter=encodeURIComponent('{"order":"symbol"}');
-    api('/equation?filter='+filter,buildAsideMenu);
 
 
-    busRequested=false;
-    
 
     
     

@@ -1,5 +1,6 @@
 var patientId;
 
+
 function drawPatient(err,patient) {
   if (err)
     return;
@@ -43,6 +44,7 @@ function drawGallery(err,rtgs) {
       rtgs[i].uploadedAt = rtgs[i].uploadedAt.substr(0, 10);
     if (!rtgs[i].thumb && rtgs[i].driveId)
       api('/rtg/'+rtgs[i].id,'PUT',{driveId:rtgs[i].driveId});
+
   }
 
   $.smekta_file('views/smekta/patient-rtg.html',{rtg:rtgs},'.patient .rtg',function() {
@@ -75,8 +77,8 @@ $(function() {
   var filter=encodeURIComponent('{"where":{"patientId":'+patientId+'},"order":"uploadedAt desc, id desc"}');
   api('/rtg?filter='+filter, drawGallery);
 
-
   api('/google/token',function(err,google){
+
     setDrivePicker(google,'.patient .rtg .add-item','DOCS_IMAGES','image/jpeg',true,true,function(drive){
       if (!drive.docs || !drive.docs.length)
         return;
