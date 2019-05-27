@@ -7,6 +7,7 @@ var polygonMode=false;
 var polygonPoints=[];
 var elements={};
 var lastDragEvent=0;
+var lastClickEvent=0;
 var thisrtg=0;
 var dotW=16;
 var dotH=16;
@@ -493,8 +494,10 @@ var rtgDraw=function(err,data) {
     
     $('#rtg-container .rtg-polygon-dashboard').click(function(e){
         
-        if (polygonMode && Date.now()-lastDragEvent>1500) {
-            
+        if (polygonMode && Date.now()-lastDragEvent>1000 && Date.now()-lastClickEvent>500) {
+
+            lastClickEvent = Date.now();
+
             var ex = parseFloat(e.offsetX === undefined ? e.originalEvent.layerX : e.offsetX);
             var ey = parseFloat(e.offsetY === undefined ? e.originalEvent.layerY : e.offsetY);
             
