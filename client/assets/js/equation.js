@@ -1,12 +1,13 @@
 var Angle = function(p,fullData) {
 
-  this.full = fullData;
+  if (fullData)
+    this.full = fullData;
 
   if (!Array.isArray(p) || p.length<=1 || p.length>3 || yFactor===0) {
     this.value=0;
     return;
   }
-  if (p.length==2) {
+  if (p.length===2) {
 
     var p1,p2,quarter;
 
@@ -41,16 +42,22 @@ var Angle = function(p,fullData) {
 
 }
 
+Angle.prototype.setFull = function (full) {
+  this.full = full;
+  return this;
+}
+
 Angle.prototype.toString = function() {
   var title='OK';
   var post='';
+
   if (this.full.maxValue && this.value>this.full.maxValue) {
     title = this.full.above;
-    post=' <span color="red">↗</span>';
+    post=' <span style="color:red">↗</span>';
   }
   if (this.full.minValue && this.value<this.full.minValue) {
     title = this.full.below;
-    post=' <span color="red">↘</span>';
+    post=' <span style="color:red">↘</span>';
   }
 
   return '<span title="'+title+'">'+(Math.round(this.value*10)/10)+'°</span>'+post;
@@ -128,13 +135,21 @@ MM.prototype.valueOf = function () {
   return this.len;
 }
 
+MM.prototype.setFull = function (full) {
+  this.full = full;
+  return this;
+}
+
 var Equation = function(points,equation,color,full) {
     this.equation=equation;
     this.points=points;
     this.value=null;
     this.color=color;
-    if (full)
+    if (full) {
+      //console.log(full);
       this.full = full;
+    }
+
 }
 
 
@@ -155,7 +170,6 @@ Equation.prototype.setYFactor = function(yFactor) {
 
 Equation.prototype.angle = function(p,reflect) {
 
-  //console.log(p);
   var a=new Angle(this.points, this.full);
   if (typeof(p)==='undefined')
     return a;
@@ -173,6 +187,11 @@ Equation.prototype.set = function(v) {
   this.value=v;
   return this;
 };
+
+Equation.prototype.setFull = function (full) {
+  this.full = full;
+  return this;
+}
 
 Equation.prototype.getColor = function() {
   return this.color;

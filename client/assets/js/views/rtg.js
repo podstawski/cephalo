@@ -376,6 +376,9 @@ var recalculateEquation = function (tick) {
 
           if (label.match(/^[0-9][0-9]\./))
             label=label.substr(3);
+          if (v.setFull)
+            v=v.setFull(self.full);
+
           html += '<li style="color:' + color + '">' + label + ' = ' + v.toString() + '</li>';
           lastFirstLetter=k.substr(0,1);
         }
@@ -613,6 +616,7 @@ var buildAsideMenu = function(err,data) {
 
   var tags={};
 
+
   for (var i=0;i<data.length; i++) {
     if (data[i].equation && data[i].equation.length && data[i].equation.trim().length>0) {
       equation[data[i].symbol] = new Equation(null,data[i].equation,data[i].color,data[i]);
@@ -700,6 +704,9 @@ $(function(){
             zoomContainer(0.9);
         });
 
+        $(document).on('click','.breadcrumb .icon-printer',function(){
+          window.print();
+        });
 
         
     }
